@@ -1,0 +1,2558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sistema Escolar — I.E. Las Cruces</title>
+<style>
+/* ===== TOKENS ===== */
+:root{
+  --verde:#2D6A2D;--verde-claro:#EAF3DE;--verde-medio:#97C459;
+  --cafe:#5C3A1E;--cafe-claro:#F5EDE3;--cafe-medio:#C4894A;
+  --tierra:#7A4F2E;--tierra-claro:#FDF6EF;
+  --rojo:#A32D2D;--rojo-claro:#FCEBEB;
+  --ambar:#854F0B;--ambar-claro:#FAEEDA;
+  --azul:#185FA5;--azul-claro:#E6F1FB;
+  --gris-bg:#F7F5F0;--gris-borde:#DDD8CF;--gris-texto:#5A5650;
+  --texto:#1E1A16;--texto-suave:#7A7068;
+  --radio:10px;--radio-sm:6px;
+  --sombra:0 1px 3px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gris-bg);color:var(--texto);font-size:15px;line-height:1.5}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--cafe);color:#F5EDE3;padding:0;flex-shrink:0;display:flex;flex-direction:column}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo h1{font-size:14px;font-weight:600;color:#F5EDE3;line-height:1.3}
+.sidebar-logo p{font-size:11px;color:rgba(245,237,227,.6);margin-top:2px}
+.sidebar-nav{padding:10px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:13px;color:rgba(245,237,227,.75);transition:background .15s,color .15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#F5EDE3}
+.nav-item.active{background:rgba(255,255,255,.12);color:#F5EDE3;border-left-color:var(--verde-medio)}
+.nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:.8}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:rgba(245,237,227,.45)}
+.main{flex:1;padding:24px;overflow-y:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.topbar h2{font-size:20px;font-weight:600;color:var(--cafe)}
+.fecha-hoy{font-size:12px;color:var(--texto-suave);background:#fff;border:1px solid var(--gris-borde);padding:4px 10px;border-radius:var(--radio-sm)}
+
+/* ===== CARDS ===== */
+.card{background:#fff;border:1px solid var(--gris-borde);border-radius:var(--radio);padding:18px;box-shadow:var(--sombra)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-titulo{font-size:14px;font-weight:600;color:var(--cafe)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ===== STAT BOXES ===== */
+.stat-box{background:#fff;border:1px solid var(--gris-borde);border-radius:var(--radio);padding:14px;text-align:center}
+.stat-n{font-size:28px;font-weight:600;line-height:1}
+.stat-l{font-size:11px;color:var(--texto-suave);margin-top:4px}
+.verde-n{color:var(--verde)}
+.rojo-n{color:var(--rojo)}
+.ambar-n{color:var(--ambar)}
+.azul-n{color:var(--azul)}
+
+/* ===== BOTONES ===== */
+.btn{font-size:12px;padding:6px 14px;border-radius:var(--radio-sm);border:1px solid var(--gris-borde);cursor:pointer;font-family:inherit;background:#fff;color:var(--gris-texto);transition:all .15s;font-weight:500}
+.btn:hover{background:var(--gris-bg);border-color:#bbb}
+.btn-verde{background:var(--verde);color:#fff;border-color:var(--verde)}
+.btn-verde:hover{background:#245724}
+.btn-rojo{background:var(--rojo);color:#fff;border-color:var(--rojo)}
+.btn-rojo:hover{background:#851f1f}
+.btn-ambar{background:var(--ambar);color:#fff;border-color:var(--ambar)}
+.btn-ambar:hover{background:#6a3e08}
+.btn-sm{font-size:11px;padding:4px 10px}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ===== INPUTS ===== */
+input,select,textarea{font-family:inherit;font-size:13px;border:1px solid var(--gris-borde);border-radius:var(--radio-sm);padding:6px 10px;color:var(--texto);background:#fff;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--cafe-medio)}
+label{font-size:12px;color:var(--texto-suave);display:block;margin-bottom:3px;font-weight:500}
+.form-group{margin-bottom:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ===== TABLA ASISTENCIA ===== */
+.tabla-asist{border:1px solid var(--gris-borde);border-radius:var(--radio);overflow:hidden;width:100%}
+.ta-fila{display:grid;grid-template-columns:30px 1fr 50px 50px 50px 50px;align-items:center;padding:0 12px;border-bottom:1px solid var(--gris-borde);min-height:40px;gap:4px}
+.ta-fila:last-child{border-bottom:none}
+.ta-enc{background:var(--gris-bg);min-height:32px}
+.ta-enc span{font-size:11px;font-weight:600;color:var(--texto-suave);text-align:center}
+.ta-enc span:nth-child(2){text-align:left}
+.ta-num{font-size:11px;color:var(--texto-suave);text-align:center}
+.ta-nombre{font-size:13px}
+.ta-nombre small{font-size:10px;color:var(--texto-suave);display:block}
+.radio-asist{display:flex;justify-content:center}
+.radio-asist input{display:none;width:auto}
+.radio-asist label{width:34px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;border:1.5px solid transparent;color:var(--texto-suave);transition:all .15s}
+.radio-asist input:checked + label.rP{background:var(--verde-claro);border-color:var(--verde);color:var(--verde)}
+.radio-asist input:checked + label.rF{background:var(--rojo-claro);border-color:var(--rojo);color:var(--rojo)}
+.radio-asist input:checked + label.rT{background:var(--ambar-claro);border-color:var(--ambar);color:var(--ambar)}
+.radio-asist input:checked + label.rE{background:var(--azul-claro);border-color:var(--azul);color:var(--azul)}
+
+/* ===== DISCIPLINA ===== */
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge-verde{background:var(--verde-claro);color:var(--verde)}
+.badge-rojo{background:var(--rojo-claro);color:var(--rojo)}
+.badge-ambar{background:var(--ambar-claro);color:var(--ambar)}
+.badge-azul{background:var(--azul-claro);color:var(--azul)}
+.lista-disc{display:flex;flex-direction:column;gap:8px}
+.disc-item{border:1px solid var(--gris-borde);border-radius:var(--radio-sm);padding:10px 12px;background:#fff}
+.disc-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.disc-nombre{font-size:13px;font-weight:600;color:var(--cafe)}
+.disc-fecha{font-size:11px;color:var(--texto-suave)}
+.disc-desc{font-size:12px;color:var(--gris-texto);line-height:1.4}
+.alerta-acum{background:var(--rojo-claro);border:1px solid #f0a0a0;border-radius:var(--radio-sm);padding:8px 12px;font-size:12px;color:var(--rojo);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+/* ===== RANKING ===== */
+.tabla-rank{width:100%;border-collapse:collapse}
+.tabla-rank th{font-size:11px;font-weight:600;color:var(--texto-suave);padding:8px 10px;border-bottom:2px solid var(--gris-borde);text-align:left;background:var(--gris-bg)}
+.tabla-rank td{font-size:13px;padding:8px 10px;border-bottom:1px solid var(--gris-borde)}
+.tabla-rank tr:last-child td{border-bottom:none}
+.tabla-rank tr:hover td{background:var(--gris-bg)}
+.pos-medal{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.pos-1{background:#FFD700;color:#5C4000}
+.pos-2{background:#C0C0C0;color:#3A3A3A}
+.pos-3{background:#CD7F32;color:#fff}
+.pos-n{background:var(--gris-borde);color:var(--texto-suave);font-size:10px}
+.barra-rank{height:6px;border-radius:3px;background:var(--gris-borde);margin-top:3px;overflow:hidden}
+.barra-fill{height:100%;border-radius:3px;background:var(--verde-medio);transition:width .4s}
+
+/* ===== NOTAS ===== */
+.nota-card{border:1px solid var(--gris-borde);border-radius:var(--radio-sm);padding:12px;background:#fff;margin-bottom:8px}
+.nota-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.nota-est{font-size:13px;font-weight:600;color:var(--cafe)}
+.nota-fecha{font-size:11px;color:var(--texto-suave)}
+.nota-texto{font-size:12px;color:var(--gris-texto);line-height:1.5;white-space:pre-wrap}
+.nota-privada-tag{font-size:10px;color:var(--ambar);background:var(--ambar-claro);padding:1px 6px;border-radius:10px}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--verde);color:#fff;padding:10px 18px;border-radius:var(--radio);font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.show{opacity:1}
+
+/* ===== MODAL ===== */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:100}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--radio);padding:22px;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-titulo{font-size:16px;font-weight:600;color:var(--cafe)}
+.modal-cerrar{background:none;border:none;cursor:pointer;font-size:20px;color:var(--texto-suave);line-height:1;padding:0}
+
+/* ===== LOGIN / MODO ===== */
+.pantalla-login{position:fixed;inset:0;background:var(--cafe);display:flex;align-items:center;justify-content:center;z-index:200}
+.login-box{background:#fff;border-radius:14px;padding:32px 28px;width:340px;max-width:95vw;text-align:center}
+.login-logo{font-size:15px;font-weight:600;color:var(--cafe);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--texto-suave);margin-bottom:22px}
+.login-roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.role-btn{padding:14px 10px;border:2px solid var(--gris-borde);border-radius:var(--radio);cursor:pointer;background:#fff;transition:all .15s;font-family:inherit}
+.role-btn:hover{border-color:var(--cafe-medio);background:var(--tierra-claro)}
+.role-btn.selected{border-color:var(--cafe);background:var(--cafe-claro)}
+.role-icon{font-size:24px;display:block;margin-bottom:4px}
+.role-label{font-size:12px;font-weight:600;color:var(--cafe)}
+.pin-area{display:none}
+.pin-input{text-align:center;font-size:22px;letter-spacing:8px;font-weight:600}
+.modo-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.modo-director{background:var(--cafe-claro);color:var(--cafe)}
+.modo-docente{background:var(--azul-claro);color:var(--azul)}
+
+/* ===== MATERIAS / NOTAS ACADÉMICAS ===== */
+.materia-tab{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--gris-borde);background:#fff;transition:all .15s;color:var(--gris-texto)}
+.materia-tab.activa{background:var(--azul);color:#fff;border-color:var(--azul)}
+.materia-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabla-notas-ac{border:1px solid var(--gris-borde);border-radius:var(--radio);overflow:hidden;width:100%}
+.tn-fila{display:grid;align-items:center;padding:0 12px;border-bottom:1px solid var(--gris-borde);min-height:40px;gap:6px}
+.tn-enc{background:var(--gris-bg);min-height:34px;font-size:11px;font-weight:600;color:var(--texto-suave)}
+.tn-fila:last-child{border-bottom:none}
+.nota-input{width:60px;text-align:center;padding:4px 6px;font-size:13px;font-weight:500}
+.nota-input::-webkit-inner-spin-button,.nota-input::-webkit-outer-spin-button{opacity:1}
+.nota-semaforo{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.ns-verde{background:var(--verde-medio)}
+.ns-ambar{background:#EF9F27}
+.ns-rojo{background:#E24B4A}
+
+/* ===== ACTIVIDADES ===== */
+.act-item{border:1px solid var(--gris-borde);border-radius:var(--radio-sm);padding:10px 12px;background:#fff;margin-bottom:8px}
+.act-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.act-titulo{font-size:13px;font-weight:600;color:var(--cafe)}
+.act-entrega{display:grid;gap:4px}
+.est-entrega-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--gris-borde)}
+.est-entrega-row:last-child{border-bottom:none}
+.est-ent-nombre{font-size:12px;color:var(--texto)}
+.toggle-entrega{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px}
+.toggle-entrega input{display:none;width:auto}
+.chk-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--gris-borde);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.toggle-entrega input:checked ~ .chk-box{background:var(--verde);border-color:var(--verde)}
+.toggle-entrega input:checked ~ .chk-box::after{content:'✓';color:#fff;font-size:11px;font-weight:700}
+.toggle-entrega input:checked ~ .ent-label{color:var(--verde)}
+.ent-label{color:var(--gris-texto)}
+
+/* ===== TABLA NOTAS AMPLIADA ===== */
+.tn-wrap{min-width:600px}
+.tn-seccion-header{background:var(--cafe-claro);padding:6px 12px;font-size:11px;font-weight:600;color:var(--cafe);border-bottom:1px solid var(--gris-borde);display:flex;align-items:center;gap:6px}
+.nombre-act-input{font-size:11px;font-weight:600;text-align:center;border:none;background:transparent;color:var(--cafe);width:90px;padding:2px 4px;border-bottom:1px dashed var(--gris-borde)}
+.nombre-act-input:focus{outline:none;border-bottom-color:var(--cafe-medio);background:var(--cafe-claro)}
+.nota-input-sm{width:56px;text-align:center;padding:3px 4px;font-size:12px;font-weight:500}
+.celda-prom{text-align:center;font-size:13px;font-weight:600;min-width:56px;padding:0 4px}
+.fila-est-ac{display:flex;align-items:center;border-bottom:1px solid var(--gris-borde);min-height:38px}
+.fila-est-ac:last-child{border-bottom:none}
+.fila-est-ac:hover{background:var(--tierra-claro)}
+.cel-num{width:32px;text-align:center;font-size:11px;color:var(--texto-suave);flex-shrink:0}
+.cel-nombre{width:170px;font-size:12px;padding:0 8px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cel-nota{width:62px;flex-shrink:0;padding:2px 3px;display:flex;justify-content:center}
+.cel-prom-final{width:66px;flex-shrink:0;text-align:center;font-size:13px;font-weight:700;padding:0 4px}
+.encab-fila{background:var(--gris-bg);min-height:52px;flex-direction:column;align-items:stretch;padding:0}
+.encab-top{display:flex;align-items:center;border-bottom:1px solid var(--gris-borde);min-height:26px}
+.encab-bot{display:flex;align-items:center;min-height:26px}
+.encab-num{width:32px;text-align:center;font-size:10px;color:var(--texto-suave);flex-shrink:0;padding:4px 0;border-right:1px solid var(--gris-borde)}
+.encab-nombre{width:170px;padding:0 8px;font-size:11px;font-weight:600;color:var(--texto-suave);border-right:1px solid var(--gris-borde)}
+.encab-nota{width:62px;flex-shrink:0;padding:2px 3px;display:flex;justify-content:center;flex-direction:column;align-items:center;border-right:1px solid var(--gris-borde)}
+.encab-prom{width:66px;flex-shrink:0;text-align:center;font-size:10px;font-weight:600;color:var(--texto-suave)}
+.btn-del-act{background:none;border:none;cursor:pointer;color:var(--rojo);font-size:13px;line-height:1;padding:0 2px;opacity:.6}
+.btn-del-act:hover{opacity:1}
+.semaforo-pill{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;min-width:36px;text-align:center}
+.sp-verde{background:var(--verde-claro);color:var(--verde)}
+.sp-ambar{background:var(--ambar-claro);color:var(--ambar)}
+.sp-rojo{background:var(--rojo-claro);color:var(--rojo)}
+.sp-vacio{background:var(--gris-borde);color:var(--texto-suave)}
+
+/* ===== PERFIL ESTUDIANTE ===== */
+.perfil-header{display:flex;align-items:center;gap:14px;padding:16px;background:var(--cafe);border-radius:var(--radio);color:#fff;margin-bottom:14px}
+.perfil-avatar{width:46px;height:46px;border-radius:50%;background:var(--cafe-medio);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.perfil-nombre{font-size:15px;font-weight:600}
+.perfil-sub{font-size:11px;opacity:.7;margin-top:2px}
+
+/* ===== FASE 3 — INFORMES Y SYNC ===== */
+.paso-guia{display:flex;align-items:flex-start;gap:10px;padding:4px 0}
+.paso-num{min-width:24px;height:24px;border-radius:50%;background:var(--cafe);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.informe-card{background:#fff;border:1px solid var(--gris-borde);border-radius:var(--radio);overflow:hidden;margin-bottom:8px}
+.informe-card-header{background:var(--cafe);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.informe-ie{font-size:11px;opacity:.7}
+.informe-titulo{font-size:14px;font-weight:600}
+.informe-body{padding:14px 16px}
+.informe-seccion{margin-bottom:12px}
+.informe-seccion-titulo{font-size:11px;font-weight:700;color:var(--cafe);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding-bottom:3px;border-bottom:1px solid var(--gris-borde)}
+.informe-fila{display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--gris-borde)}
+.informe-fila:last-child{border-bottom:none}
+.informe-footer{background:var(--gris-bg);padding:10px 16px;font-size:11px;color:var(--texto-suave);text-align:center}
+.whatsapp-btn{display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#fff;border:none;border-radius:var(--radio-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none}
+.whatsapp-btn:hover{background:#1da851}
+.tabla-estados{width:100%;border-collapse:collapse}
+.tabla-estados th{font-size:11px;font-weight:600;color:var(--texto-suave);padding:6px 10px;border-bottom:2px solid var(--gris-borde);text-align:left;background:var(--gris-bg)}
+.tabla-estados td{font-size:12px;padding:7px 10px;border-bottom:1px solid var(--gris-borde);vertical-align:middle}
+.tabla-estados tr:hover td{background:var(--gris-bg)}
+.portal-codigo{font-family:monospace;font-size:13px;font-weight:700;color:var(--azul);background:var(--azul-claro);padding:2px 8px;border-radius:4px;letter-spacing:2px}
+
+/* ===== RESPONSIVE FASE 3 ===== */
+
+@media(max-width:680px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;padding:10px}
+  .sidebar-logo{display:none}
+  .sidebar-nav{display:flex;padding:0;flex:none;width:100%}
+  .nav-item{flex:1;justify-content:center;padding:8px 4px;border-left:none;border-bottom:3px solid transparent;font-size:11px;flex-direction:column;gap:2px}
+  .nav-item.active{border-bottom-color:var(--verde-medio);border-left-color:transparent}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-2{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .ta-fila{grid-template-columns:24px 1fr 42px 42px 42px 42px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>I.E. Las Cruces</h1>
+    <p id="sidebar-rol-label">Director de grupo · 8°</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" onclick="mostrarVista('inicio')" id="nav-inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Inicio
+    </div>
+    <div class="nav-item" onclick="mostrarVista('asistencia')" id="nav-asistencia">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>
+      Asistencia
+    </div>
+    <div class="nav-item" onclick="mostrarVista('disciplina')" id="nav-disciplina">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Disciplina
+    </div>
+    <div class="nav-item" onclick="mostrarVista('ranking')" id="nav-ranking">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Ranking
+    </div>
+    <div class="nav-item" onclick="mostrarVista('notas')" id="nav-notas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Mis notas
+    </div>
+    <div class="nav-item" onclick="mostrarVista('academico')" id="nav-academico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      Académico
+    </div>
+    <div class="nav-item" onclick="mostrarVista('actividades')" id="nav-actividades">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Actividades
+    </div>
+    <div class="nav-item" onclick="mostrarVista('estudiantes')" id="nav-estudiantes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Estudiantes
+    </div>
+    <div class="nav-item" onclick="mostrarVista('informes')" id="nav-informes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Informes
+    </div>
+    <div class="nav-item" onclick="mostrarVista('sync')" id="nav-sync">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15"/></svg>
+      Sync & Config
+    </div>
+  </div>
+  <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
+    <div id="modo-badge-sidebar"></div>
+    <span>v2.0 · Offline</span>
+    <button class="btn btn-sm" style="font-size:10px;padding:3px 8px" onclick="cambiarModo()">Cambiar modo</button>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="main" id="main-content">
+  <!-- INICIO -->
+  <div id="vista-inicio">
+    <div class="topbar">
+      <h2>Panel principal</h2>
+      <span class="fecha-hoy" id="fecha-display"></span>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="stat-box">
+        <div class="stat-n verde-n" id="stat-asist">—</div>
+        <div class="stat-l">Presentes hoy</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n rojo-n" id="stat-fallas">—</div>
+        <div class="stat-l">Fallas hoy</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n ambar-n" id="stat-disc">—</div>
+        <div class="stat-l">Registros discipl.</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-n azul-n" id="stat-total">—</div>
+        <div class="stat-l">Total estudiantes</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-titulo">Alertas del día</span>
+        </div>
+        <div id="alertas-inicio"><p style="font-size:13px;color:var(--texto-suave)">Sin alertas por ahora.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-titulo">Accesos rápidos</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-verde" onclick="mostrarVista('asistencia')">📋 Tomar asistencia de hoy</button>
+          <button class="btn btn-ambar" onclick="abrirModalDisc()">⚠️ Registrar novedad disciplinaria</button>
+          <button class="btn" onclick="mostrarVista('notas')">📝 Escribir nota privada</button>
+          <button class="btn" onclick="mostrarVista('ranking')">🏆 Ver ranking del grado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASISTENCIA -->
+  <div id="vista-asistencia" style="display:none">
+    <div class="topbar">
+      <h2>Asistencia</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="date" id="fecha-asist" style="width:auto" onchange="renderAsistencia()"/>
+        <button class="btn" onclick="marcarTodosP()">Todo presente</button>
+        <button class="btn btn-verde" onclick="guardarAsistencia()">Guardar</button>
+      </div>
+    </div>
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="stat-box"><div class="stat-n verde-n" id="a-cnt-p">0</div><div class="stat-l">Presentes</div></div>
+      <div class="stat-box"><div class="stat-n rojo-n" id="a-cnt-f">0</div><div class="stat-l">Fallas</div></div>
+      <div class="stat-box"><div class="stat-n ambar-n" id="a-cnt-t">0</div><div class="stat-l">Tardanzas</div></div>
+      <div class="stat-box"><div class="stat-n azul-n" id="a-cnt-e">0</div><div class="stat-l">Excusas</div></div>
+    </div>
+    <div class="card">
+      <div class="tabla-asist">
+        <div class="ta-fila ta-enc">
+          <span>#</span><span>Estudiante</span><span>P</span><span>F</span><span>T</span><span>E</span>
+        </div>
+        <div id="lista-asistencia"></div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-titulo">Historial de la semana</span>
+        </div>
+        <div id="historial-semana" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCIPLINA -->
+  <div id="vista-disciplina" style="display:none">
+    <div class="topbar">
+      <h2>Control disciplinario</h2>
+      <button class="btn btn-ambar" onclick="abrirModalDisc()">+ Nueva novedad</button>
+    </div>
+    <div id="alertas-disc" style="margin-bottom:10px"></div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-titulo">Registro de novedades</span>
+        <div class="btn-group">
+          <button class="btn btn-sm" onclick="filtrarDisc('todos')">Todas</button>
+          <button class="btn btn-sm" onclick="filtrarDisc('leve')">Leves</button>
+          <button class="btn btn-sm" onclick="filtrarDisc('grave')">Graves</button>
+        </div>
+      </div>
+      <div class="lista-disc" id="lista-disciplina"></div>
+    </div>
+  </div>
+
+  <!-- RANKING -->
+  <div id="vista-ranking" style="display:none">
+    <div class="topbar">
+      <h2>Ranking del grado</h2>
+      <div style="display:flex;gap:8px">
+        <select id="orden-rank" style="width:auto" onchange="renderRanking()">
+          <option value="score">Puntuación global</option>
+          <option value="asistencia">Por asistencia</option>
+          <option value="disciplina">Por disciplina</option>
+          <option value="nombre">Alfabético</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--texto-suave);margin-bottom:12px">Puntuación global = asistencia (40%) + promedio académico (50%) − novedades disciplinarias (−3 pts c/u). En la Fase 3 se integra el informe a padres.</p>
+      <div style="overflow-x:auto">
+        <table class="tabla-rank">
+          <thead><tr><th>Pos.</th><th>Estudiante</th><th>Asistencia</th><th>Novedades</th><th>Puntuación</th></tr></thead>
+          <tbody id="tbody-ranking"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTAS DIRECTOR -->
+  <div id="vista-notas" style="display:none">
+    <div class="topbar">
+      <h2>Mis notas privadas</h2>
+      <button class="btn btn-verde" onclick="abrirModalNota()">+ Nueva nota</button>
+    </div>
+    <p style="font-size:12px;color:var(--texto-suave);margin-bottom:14px">Estas notas son solo tuyas, no son visibles para nadie más. Úsalas para observaciones personales sobre el grupo o estudiantes.</p>
+    <div id="lista-notas-dir"><p style="font-size:13px;color:var(--texto-suave)">No hay notas aún.</p></div>
+  </div>
+
+  <!-- ACADÉMICO -->
+  <div id="vista-academico" style="display:none">
+    <div class="topbar">
+      <h2>Registro académico</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span id="modo-badge-top"></span>
+        <select id="periodo-sel" style="width:auto" onchange="renderAcademico()">
+          <option value="P1">Período 1</option>
+          <option value="P2">Período 2</option>
+          <option value="P3">Período 3</option>
+          <option value="P4">Período 4</option>
+        </select>
+        <button class="btn btn-verde" onclick="guardarNotasAc()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar notas
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs de materias -->
+    <div id="materia-tabs-cont" class="materia-tabs"></div>
+
+    <!-- Pesos porcentuales -->
+    <div class="card" style="margin-bottom:12px;padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between">
+        <span class="card-titulo" id="titulo-materia-ac">Selecciona una materia</span>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;color:var(--texto-suave);font-weight:600">PESOS DEL PERÍODO:</span>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">Actividades <input type="number" id="peso-act" value="35" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">Autoevaluación <input type="number" id="peso-auto" value="10" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">Coevaluación <input type="number" id="peso-coe" value="10" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">Heteroevaluación <input type="number" id="peso-hetero" value="15" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">Examen final <input type="number" id="peso-exf" value="20" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <label style="margin:0;display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gris-texto)">ICFES <input type="number" id="peso-icfes" value="10" min="0" max="100" style="width:46px;padding:2px 5px;font-size:12px" oninput="validarPesos()">%</label>
+          <span id="pesos-total-badge" class="badge badge-verde" style="font-size:11px">Total: 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección actividades del docente -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <span class="card-titulo">📝 Actividades del período</span>
+        <button class="btn btn-sm btn-verde" onclick="agregarColumnaActividad()">+ Agregar actividad</button>
+      </div>
+      <div id="tabla-actividades-notas" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Sección evaluaciones -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <span class="card-titulo">🔄 Evaluaciones</span>
+        <span style="font-size:11px;color:var(--texto-suave)">Autoevaluación · Coevaluación · Heteroevaluación</span>
+      </div>
+      <div id="tabla-evaluaciones" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Sección exámenes -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <span class="card-titulo">📋 Exámenes</span>
+        <span style="font-size:11px;color:var(--texto-suave)">Examen final · Examen tipo ICFES</span>
+      </div>
+      <div id="tabla-examenes" style="overflow-x:auto"></div>
+    </div>
+
+    <!-- Resumen final del período -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-titulo">🏁 Nota final del período</span>
+        <span style="font-size:11px;color:var(--texto-suave)">Calculada con los pesos configurados arriba</span>
+      </div>
+      <div id="tabla-nota-final" style="overflow-x:auto"></div>
+    </div>
+  </div>
+
+  <!-- ACTIVIDADES -->
+  <div id="vista-actividades" style="display:none">
+    <div class="topbar">
+      <h2>Control de actividades</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="act-materia-filter" style="width:auto" onchange="renderActividades()">
+          <option value="">Todas las materias</option>
+        </select>
+        <button class="btn btn-verde" onclick="abrirModalActividad()">+ Nueva actividad</button>
+      </div>
+    </div>
+    <div id="resumen-actividades" style="margin-bottom:14px"></div>
+    <div id="lista-actividades-cont"></div>
+  </div>
+  <div id="vista-estudiantes" style="display:none">
+    <div class="topbar">
+      <h2>Lista de estudiantes</h2>
+      <button class="btn btn-verde" onclick="abrirModalEstudiante()">+ Agregar estudiante</button>
+    </div>
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table class="tabla-rank">
+          <thead><tr><th>#</th><th>Nombre completo</th><th>Acudiente</th><th>Teléfono</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-estudiantes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMES A PADRES -->
+  <div id="vista-informes" style="display:none">
+    <div class="topbar">
+      <h2>Informes a padres</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="inf-periodo" style="width:auto">
+          <option value="P1">Período 1</option><option value="P2">Período 2</option>
+          <option value="P3">Período 3</option><option value="P4">Período 4</option>
+        </select>
+        <select id="inf-semana" style="width:auto">
+          <option value="S1">Semana 1</option><option value="S2">Semana 2</option>
+          <option value="S3">Semana 3</option><option value="S4">Semana 4</option>
+          <option value="S5">Semana 5</option>
+        </select>
+        <button class="btn btn-verde" onclick="generarTodosInformes()">📤 Generar todos</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;background:var(--azul-claro);border-color:#a8c8f0">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:20px">ℹ️</span>
+        <div style="font-size:12px;color:var(--azul);line-height:1.6">
+          <b style="display:block;margin-bottom:3px">¿Cómo funciona el portal de padres?</b>
+          Cada estudiante tiene un código único. El padre abre el enlace y ve fallas de la semana, actividades pendientes y notas disponibles. Puedes compartir por WhatsApp directamente desde esta pantalla.
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:12px">
+      <div class="card">
+        <div class="card-header"><span class="card-titulo">Vista previa del informe</span></div>
+        <div class="form-group">
+          <label>Seleccionar estudiante</label>
+          <select id="inf-est-sel" onchange="previsualizarInforme()"></select>
+        </div>
+        <div id="inf-preview-cont"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-titulo">Compartir informe</span></div>
+        <div id="inf-compartir-cont"><p style="font-size:13px;color:var(--texto-suave)">Selecciona un estudiante.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-titulo">Estado de informes — todos los estudiantes</span>
+        <span id="inf-semana-label" class="badge badge-azul"></span>
+      </div>
+      <div id="tabla-inf-estado"></div>
+    </div>
+  </div>
+
+  <!-- SYNC & CONFIGURACIÓN -->
+  <div id="vista-sync" style="display:none">
+    <div class="topbar"><h2>Sincronización & Configuración</h2></div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <span class="card-titulo">🔄 Sincronización con Google Sheets</span>
+        <span id="sync-status-badge" class="badge badge-ambar">No configurado</span>
+      </div>
+      <p style="font-size:12px;color:var(--gris-texto);margin-bottom:14px;line-height:1.6">Google Sheets actúa como base de datos compartida. Todos los docentes ven los mismos datos cuando hay internet. Sin internet todo funciona local y sincroniza al reconectar.</p>
+      <div class="form-group">
+        <label>ID de la hoja de cálculo de Google</label>
+        <input type="text" id="sheets-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"/>
+        <p style="font-size:11px;color:var(--texto-suave);margin-top:3px">Está en la URL de tu Sheet: docs.google.com/spreadsheets/d/<b>[ESTE ID]</b>/edit</p>
+      </div>
+      <div class="form-group">
+        <label>API Key de Google Sheets</label>
+        <input type="text" id="sheets-apikey" placeholder="AIza..."/>
+        <p style="font-size:11px;color:var(--texto-suave);margin-top:3px">En <a href="https://console.cloud.google.com" target="_blank" style="color:var(--azul)">Google Cloud Console</a> → Habilitar Sheets API → Credenciales → Crear API Key</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-verde" onclick="guardarConfigSheets()">Guardar config.</button>
+        <button class="btn" onclick="testConexionSheets()">Probar conexión</button>
+        <button class="btn btn-ambar" onclick="sincronizarSheets()">🔄 Sincronizar ahora</button>
+      </div>
+      <div id="sync-log" style="display:none;margin-top:10px;font-size:12px;color:var(--gris-texto);background:var(--gris-bg);border-radius:var(--radio-sm);padding:8px 12px;font-family:monospace;line-height:1.8"></div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header"><span class="card-titulo">📋 Guía para configurar Google Sheets</span></div>
+      <div style="font-size:13px;line-height:1.8;color:var(--gris-texto)">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="paso-guia"><span class="paso-num">1</span><div>Crea una hoja en Google Drive: <b>"Sistema I.E. Las Cruces"</b></div></div>
+          <div class="paso-guia"><span class="paso-num">2</span><div>Copia el <b>ID</b> de la URL (la parte larga entre /d/ y /edit)</div></div>
+          <div class="paso-guia"><span class="paso-num">3</span><div>Haz la hoja pública: <b>Compartir → Cualquier persona con el enlace → Ver</b></div></div>
+          <div class="paso-guia"><span class="paso-num">4</span><div>En <a href="https://console.cloud.google.com" target="_blank" style="color:var(--azul)">console.cloud.google.com</a> → Activa <b>Google Sheets API</b> → Crea un <b>API Key</b></div></div>
+          <div class="paso-guia"><span class="paso-num">5</span><div>Pega los datos arriba, guarda y haz clic en <b>"Sincronizar ahora"</b></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header"><span class="card-titulo">💾 Exportar y respaldar datos</span></div>
+      <p style="font-size:12px;color:var(--gris-texto);margin-bottom:10px">Descarga una copia de seguridad o exporta datos para Excel.</p>
+      <div class="btn-group">
+        <button class="btn btn-verde" onclick="exportarJSON()">⬇️ Respaldo completo (.json)</button>
+        <button class="btn" onclick="exportarCSVAsistencia()">📊 Asistencia (.csv)</button>
+        <button class="btn" onclick="exportarCSVNotas()">📊 Notas (.csv)</button>
+        <button class="btn btn-ambar" onclick="importarJSON()">⬆️ Restaurar respaldo</button>
+      </div>
+      <input type="file" id="file-import" accept=".json" style="display:none" onchange="procesarImport(this)"/>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-titulo">⚙️ Configuración general</span></div>
+      <div class="form-row">
+        <div class="form-group"><label>Nombre de la institución</label><input type="text" id="cfg-nombre-ie" placeholder="I.E. Las Cruces"/></div>
+        <div class="form-group"><label>Grado</label><input type="text" id="cfg-grado" placeholder="8°"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Director de grupo</label><input type="text" id="cfg-director" placeholder="Profe Luis"/></div>
+        <div class="form-group"><label>Año lectivo</label><input type="text" id="cfg-anio" placeholder="2026"/></div>
+      </div>
+      <div class="form-group">
+        <label>Cambiar PIN del director (dejar vacío para no cambiar)</label>
+        <input type="password" id="cfg-pin" placeholder="Nuevo PIN de 4 dígitos" maxlength="4"/>
+      </div>
+      <button class="btn btn-verde" onclick="guardarConfigGeneral()">Guardar configuración</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALES ===== -->
+<!-- Modal disciplina -->
+<div class="overlay" id="overlay-disc">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-titulo">Nueva novedad disciplinaria</span>
+      <button class="modal-cerrar" onclick="cerrarModal('overlay-disc')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Estudiante</label>
+      <select id="disc-est"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="disc-fecha"/>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="disc-tipo">
+          <option value="leve">Leve</option>
+          <option value="moderada">Moderada</option>
+          <option value="grave">Grave</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Descripción de la novedad</label>
+      <textarea id="disc-desc" rows="3" placeholder="Describe brevemente lo ocurrido..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Acción tomada (opcional)</label>
+      <input type="text" id="disc-accion" placeholder="Llamado de atención, citación acudiente..."/>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" onclick="cerrarModal('overlay-disc')">Cancelar</button>
+      <button class="btn btn-ambar" onclick="guardarDisc()">Guardar novedad</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nota director -->
+<div class="overlay" id="overlay-nota">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-titulo">Nueva nota privada</span>
+      <button class="modal-cerrar" onclick="cerrarModal('overlay-nota')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Estudiante (opcional)</label>
+      <select id="nota-est">
+        <option value="">— Nota general del grupo —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Nota privada</label>
+      <textarea id="nota-texto" rows="5" placeholder="Escribe tu observación aquí. Solo tú puedes ver esto..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" onclick="cerrarModal('overlay-nota')">Cancelar</button>
+      <button class="btn btn-verde" onclick="guardarNota()">Guardar nota</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal estudiante -->
+<div class="overlay" id="overlay-est">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-titulo">Agregar / editar estudiante</span>
+      <button class="modal-cerrar" onclick="cerrarModal('overlay-est')">×</button>
+    </div>
+    <input type="hidden" id="est-edit-id"/>
+    <div class="form-group">
+      <label>Nombre completo</label>
+      <input type="text" id="est-nombre" placeholder="Apellidos y nombres"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Acudiente</label>
+        <input type="text" id="est-acudiente" placeholder="Nombre del acudiente"/>
+      </div>
+      <div class="form-group">
+        <label>Teléfono acudiente</label>
+        <input type="text" id="est-tel" placeholder="300 000 0000"/>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" onclick="cerrarModal('overlay-est')">Cancelar</button>
+      <button class="btn btn-verde" onclick="guardarEstudiante()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal actividad -->
+<div class="overlay" id="overlay-act">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-titulo">Nueva actividad</span>
+      <button class="modal-cerrar" onclick="cerrarModal('overlay-act')">×</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Materia</label>
+        <select id="act-materia-sel"></select>
+      </div>
+      <div class="form-group">
+        <label>Fecha de entrega</label>
+        <input type="date" id="act-fecha"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Título de la actividad</label>
+      <input type="text" id="act-titulo" placeholder="Ej: Taller de fracciones, Exposición oral..."/>
+    </div>
+    <div class="form-group">
+      <label>Descripción (opcional)</label>
+      <textarea id="act-desc" rows="2" placeholder="Instrucciones o detalles..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button class="btn" onclick="cerrarModal('overlay-act')">Cancelar</button>
+      <button class="btn btn-verde" onclick="guardarActividad()">Crear actividad</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal configurar materias -->
+<div class="overlay" id="overlay-materias">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-titulo">Configurar materias</span>
+      <button class="modal-cerrar" onclick="cerrarModal('overlay-materias')">×</button>
+    </div>
+    <p style="font-size:12px;color:var(--texto-suave);margin-bottom:12px">Agrega las materias del grado. Cada docente podrá ingresar notas en su materia usando su PIN.</p>
+    <div id="lista-materias-config" style="margin-bottom:12px"></div>
+    <div class="form-row" style="margin-bottom:10px">
+      <input type="text" id="nueva-materia-nombre" placeholder="Nombre de la materia"/>
+      <input type="text" id="nueva-materia-docente" placeholder="Docente responsable"/>
+    </div>
+    <div class="form-row" style="margin-bottom:10px">
+      <input type="text" id="nueva-materia-pin" placeholder="PIN del docente (4 dígitos)" maxlength="4"/>
+      <button class="btn btn-verde" onclick="agregarMateria()">Agregar materia</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pantalla de login/selección de modo -->
+<div class="pantalla-login" id="pantalla-login">
+  <div class="login-box">
+    <div class="login-logo">I.E. Las Cruces</div>
+    <div class="login-sub">Sistema de gestión escolar · Grado 8°</div>
+    <div class="login-roles">
+      <button class="role-btn" id="role-btn-dir" onclick="seleccionarRol('director')">
+        <span class="role-icon">🧑‍💼</span>
+        <span class="role-label">Director de grupo</span>
+      </button>
+      <button class="role-btn" id="role-btn-doc" onclick="seleccionarRol('docente')">
+        <span class="role-icon">👨‍🏫</span>
+        <span class="role-label">Docente</span>
+      </button>
+    </div>
+    <div class="pin-area" id="pin-area">
+      <label style="display:block;margin-bottom:6px">Ingresa tu PIN</label>
+      <input type="password" class="pin-input" id="pin-input" maxlength="4" inputmode="numeric" placeholder="••••" onkeyup="if(event.key==='Enter')verificarPin()"/>
+      <p style="font-size:11px;color:var(--texto-suave);margin-top:6px" id="pin-hint"></p>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
+        <button class="btn" onclick="volverSeleccion()">Volver</button>
+        <button class="btn btn-verde" onclick="verificarPin()">Ingresar</button>
+      </div>
+      <p style="font-size:10px;color:#ccc;margin-top:10px" id="pin-error" style="color:var(--rojo)"></p>
+    </div>
+    <div id="login-acceso-rapido" style="margin-top:10px">
+      <button class="btn" style="width:100%;font-size:11px" onclick="entrarSinPin()">Entrar sin PIN (modo demo)</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATOS Y ESTADO
+// ============================================================
+const HOY = new Date().toISOString().split('T')[0];
+
+function cargar(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){return def;} }
+function guardar(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+let estudiantes = cargar('lc_estudiantes', [
+  {id:1,nombre:'Angélica Torres',acudiente:'Carmen Torres',tel:''},
+  {id:2,nombre:'Brayan Causado',acudiente:'Rosa Causado',tel:''},
+  {id:3,nombre:'Dayana Petro',acudiente:'Luz Petro',tel:''},
+  {id:4,nombre:'Edwin Mercado',acudiente:'Jorge Mercado',tel:''},
+  {id:5,nombre:'Fabiola Díaz',acudiente:'María Díaz',tel:''},
+  {id:6,nombre:'Giovanny Suárez',acudiente:'Pedro Suárez',tel:''},
+  {id:7,nombre:'Hasbleidy Lara',acudiente:'Ana Lara',tel:''},
+  {id:8,nombre:'Iván Cantillo',acudiente:'Luis Cantillo',tel:''},
+  {id:9,nombre:'Juliana Hernández',acudiente:'Sonia Hernández',tel:''},
+  {id:10,nombre:'Kevin Palomino',acudiente:'Marta Palomino',tel:''},
+]);
+
+let asistencia = cargar('lc_asistencia', {});      // {fecha: {id: 'P'|'F'|'T'|'E'}}
+let disciplina = cargar('lc_disciplina', []);      // []
+let notasDir   = cargar('lc_notas_dir', []);       // []
+let asistEstado= {};                               // estado en memoria para la fecha actual
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
+function mostrarVista(v){
+  ['inicio','asistencia','disciplina','ranking','notas','estudiantes'].forEach(n=>{
+    document.getElementById('vista-'+n).style.display = n===v ? 'block' : 'none';
+    document.getElementById('nav-'+n)?.classList.toggle('active', n===v);
+  });
+  if(v==='asistencia') renderAsistencia();
+  if(v==='disciplina') renderDisciplina();
+  if(v==='ranking')    renderRanking();
+  if(v==='notas')      renderNotasDir();
+  if(v==='estudiantes') renderEstudiantes();
+  if(v==='inicio')     renderInicio();
+}
+
+// ============================================================
+// FECHA
+// ============================================================
+function setFechaDisplay(){
+  const d = new Date();
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('fecha-display').textContent =
+    `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+function renderInicio(){
+  const hoyAsist = asistencia[HOY] || {};
+  const presentes = Object.values(hoyAsist).filter(v=>v==='P').length;
+  const fallas    = Object.values(hoyAsist).filter(v=>v==='F').length;
+  document.getElementById('stat-asist').textContent  = Object.keys(hoyAsist).length ? presentes : '—';
+  document.getElementById('stat-fallas').textContent = Object.keys(hoyAsist).length ? fallas : '—';
+  document.getElementById('stat-disc').textContent   = disciplina.length;
+  document.getElementById('stat-total').textContent  = estudiantes.length;
+
+  // Alertas
+  const alertas = [];
+  estudiantes.forEach(e=>{
+    const fallasSem = fallasSemana(e.id);
+    if(fallasSem >= 3) alertas.push(`<div class="alerta-acum">⚠️ <b>${e.nombre}</b> acumula ${fallasSem} fallas esta semana</div>`);
+  });
+  document.getElementById('alertas-inicio').innerHTML = alertas.length
+    ? alertas.join('')
+    : '<p style="font-size:13px;color:var(--texto-suave)">Sin alertas por ahora.</p>';
+}
+
+// ============================================================
+// ASISTENCIA
+// ============================================================
+function renderAsistencia(){
+  const fi = document.getElementById('fecha-asist');
+  if(!fi.value) fi.value = HOY;
+  const fecha = fi.value;
+  asistEstado = {...(asistencia[fecha]||{})};
+
+  const lista = document.getElementById('lista-asistencia');
+  lista.innerHTML = '';
+  estudiantes.forEach((e,i)=>{
+    const fila = document.createElement('div');
+    fila.className = 'ta-fila';
+    fila.innerHTML = `
+      <span class="ta-num">${i+1}</span>
+      <span class="ta-nombre">${e.nombre}<small>${e.acudiente}</small></span>
+      ${['P','F','T','E'].map(v=>`
+        <div class="radio-asist">
+          <input type="radio" name="ra-${e.id}" id="ra-${e.id}-${v}" ${asistEstado[e.id]===v?'checked':''}>
+          <label class="r${v}" for="ra-${e.id}-${v}">${v}</label>
+        </div>`).join('')}`;
+    lista.appendChild(fila);
+    ['P','F','T','E'].forEach(v=>{
+      fila.querySelector(`#ra-${e.id}-${v}`).addEventListener('change',()=>{
+        asistEstado[e.id]=v; actualizarContadores();
+      });
+    });
+  });
+  actualizarContadores();
+  renderHistorialSemana();
+}
+
+function actualizarContadores(){
+  const vals = Object.values(asistEstado);
+  document.getElementById('a-cnt-p').textContent = vals.filter(v=>v==='P').length;
+  document.getElementById('a-cnt-f').textContent = vals.filter(v=>v==='F').length;
+  document.getElementById('a-cnt-t').textContent = vals.filter(v=>v==='T').length;
+  document.getElementById('a-cnt-e').textContent = vals.filter(v=>v==='E').length;
+}
+
+function marcarTodosP(){
+  estudiantes.forEach(e=>{ asistEstado[e.id]='P'; });
+  renderAsistencia();
+}
+
+function guardarAsistencia(){
+  const fecha = document.getElementById('fecha-asist').value;
+  asistencia[fecha] = {...asistEstado};
+  guardar('lc_asistencia', asistencia);
+  mostrarToast('Asistencia guardada ✓');
+  renderHistorialSemana();
+}
+
+function renderHistorialSemana(){
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+  const fechas=[];
+  for(let i=0;i<5;i++){
+    const d=new Date(lunes);
+    d.setDate(lunes.getDate()+i);
+    fechas.push(d.toISOString().split('T')[0]);
+  }
+  const dias=['Lun','Mar','Mié','Jue','Vie'];
+  const colores={'P':'verde','F':'rojo','T':'ambar','E':'azul','':''};
+  let html=`<table style="border-collapse:collapse;font-size:12px;min-width:500px;width:100%">
+    <thead><tr><th style="padding:6px 10px;text-align:left;border-bottom:2px solid var(--gris-borde);background:var(--gris-bg)">Estudiante</th>
+    ${fechas.map((f,i)=>`<th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--gris-borde);background:var(--gris-bg)">${dias[i]}</th>`).join('')}
+    <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--gris-borde);background:var(--gris-bg)">Fallas</th></tr></thead><tbody>`;
+
+  estudiantes.forEach(e=>{
+    const fallas = fechas.filter(f=>(asistencia[f]||{})[e.id]==='F').length;
+    html+=`<tr>
+      <td style="padding:6px 10px;border-bottom:1px solid var(--gris-borde);font-size:12px">${e.nombre.split(' ').slice(0,2).join(' ')}</td>
+      ${fechas.map(f=>{
+        const v=(asistencia[f]||{})[e.id]||'';
+        const c=colores[v]||'';
+        return `<td style="padding:4px;text-align:center;border-bottom:1px solid var(--gris-borde)">
+          ${v?`<span class="badge badge-${c}">${v}</span>`:'<span style="color:var(--texto-suave);font-size:10px">—</span>'}
+        </td>`;
+      }).join('')}
+      <td style="padding:4px;text-align:center;border-bottom:1px solid var(--gris-borde)">
+        <span class="badge ${fallas>=3?'badge-rojo':fallas>0?'badge-ambar':'badge-verde'}">${fallas}</span>
+      </td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('historial-semana').innerHTML = html;
+}
+
+function fallasSemana(id){
+  const hoy = new Date();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+  let c=0;
+  for(let i=0;i<5;i++){
+    const d=new Date(lunes); d.setDate(lunes.getDate()+i);
+    const f=d.toISOString().split('T')[0];
+    if((asistencia[f]||{})[id]==='F') c++;
+  }
+  return c;
+}
+
+// ============================================================
+// DISCIPLINA
+// ============================================================
+let filtroDisc = 'todos';
+function abrirModalDisc(){
+  const sel = document.getElementById('disc-est');
+  sel.innerHTML = estudiantes.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  document.getElementById('disc-fecha').value = HOY;
+  document.getElementById('disc-desc').value = '';
+  document.getElementById('disc-accion').value = '';
+  document.getElementById('overlay-disc').classList.add('open');
+}
+function guardarDisc(){
+  const d = {
+    id: Date.now(),
+    estId: +document.getElementById('disc-est').value,
+    fecha: document.getElementById('disc-fecha').value,
+    tipo: document.getElementById('disc-tipo').value,
+    desc: document.getElementById('disc-desc').value.trim(),
+    accion: document.getElementById('disc-accion').value.trim()
+  };
+  if(!d.desc){ mostrarToast('Escribe una descripción'); return; }
+  disciplina.unshift(d);
+  guardar('lc_disciplina', disciplina);
+  cerrarModal('overlay-disc');
+  mostrarToast('Novedad registrada ✓');
+  renderDisciplina();
+}
+function filtrarDisc(f){ filtroDisc=f; renderDisciplina(); }
+function renderDisciplina(){
+  const tipos = {'leve':'badge-azul','moderada':'badge-ambar','grave':'badge-rojo'};
+  const datos = filtroDisc==='todos' ? disciplina : disciplina.filter(d=>d.tipo===filtroDisc);
+
+  // Alertas acumuladas
+  const conteos={};
+  disciplina.forEach(d=>{ conteos[d.estId]=(conteos[d.estId]||0)+1; });
+  const alertas = Object.entries(conteos).filter(([,c])=>c>=3)
+    .map(([id,c])=>{
+      const e=estudiantes.find(s=>s.id===+id);
+      return e?`<div class="alerta-acum">⚠️ <b>${e.nombre}</b> tiene ${c} registros disciplinarios</div>`:'';
+    });
+  document.getElementById('alertas-disc').innerHTML = alertas.join('');
+
+  if(!datos.length){
+    document.getElementById('lista-disciplina').innerHTML='<p style="font-size:13px;color:var(--texto-suave)">No hay registros.</p>';
+    return;
+  }
+  document.getElementById('lista-disciplina').innerHTML = datos.map(d=>{
+    const e=estudiantes.find(s=>s.id===d.estId);
+    return `<div class="disc-item">
+      <div class="disc-item-header">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="disc-nombre">${e?e.nombre:'Desconocido'}</span>
+          <span class="badge ${tipos[d.tipo]||'badge-azul'}">${d.tipo}</span>
+        </div>
+        <span class="disc-fecha">${formatFecha(d.fecha)}</span>
+      </div>
+      <div class="disc-desc">${d.desc}</div>
+      ${d.accion?`<div style="font-size:11px;color:var(--verde);margin-top:4px">→ ${d.accion}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// RANKING
+// ============================================================
+function renderRanking(){
+  const orden = document.getElementById('orden-rank').value;
+  const contDisc={};
+  disciplina.forEach(d=>{ contDisc[d.estId]=(contDisc[d.estId]||0)+1; });
+
+  const diasTotal = Object.keys(asistencia).length || 1;
+  const data = estudiantes.map(e=>{
+    const totalDias = Object.keys(asistencia).length;
+    const presentes = totalDias ? Object.values(asistencia).filter(d=>d[e.id]==='P').length : 0;
+    const fallas    = totalDias ? Object.values(asistencia).filter(d=>d[e.id]==='F').length : 0;
+    const pct = totalDias ? Math.round((presentes/totalDias)*100) : 100;
+    const novedades = contDisc[e.id]||0;
+    const score = pct - (novedades*5);
+    return {...e, presentes, fallas, pct, novedades, score, totalDias};
+  });
+
+  if(orden==='asistencia') data.sort((a,b)=>b.pct-a.pct);
+  else if(orden==='disciplina') data.sort((a,b)=>a.novedades-b.novedades);
+  else data.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+  document.getElementById('tbody-ranking').innerHTML = data.map((e,i)=>{
+    const medalClass = i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+    return `<tr>
+      <td><span class="pos-medal ${medalClass}">${i+1}</span></td>
+      <td><strong style="font-size:13px">${e.nombre}</strong></td>
+      <td>
+        <div style="font-size:13px;font-weight:500">${e.totalDias?e.pct+'%':'Sin datos'}</div>
+        ${e.totalDias?`<div class="barra-rank"><div class="barra-fill" style="width:${e.pct}%"></div></div>`:''}
+      </td>
+      <td><span class="badge ${e.novedades===0?'badge-verde':e.novedades<3?'badge-ambar':'badge-rojo'}">${e.novedades} reg.</span></td>
+      <td><strong style="color:var(--cafe)">${e.totalDias?e.score:'—'}</strong></td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// NOTAS DIRECTOR
+// ============================================================
+function abrirModalNota(){
+  const sel = document.getElementById('nota-est');
+  sel.innerHTML = '<option value="">— Nota general del grupo —</option>' +
+    estudiantes.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  document.getElementById('nota-texto').value='';
+  document.getElementById('overlay-nota').classList.add('open');
+}
+function guardarNota(){
+  const txt = document.getElementById('nota-texto').value.trim();
+  if(!txt){ mostrarToast('Escribe algo primero'); return; }
+  const estId = document.getElementById('nota-est').value;
+  notasDir.unshift({
+    id: Date.now(),
+    fecha: HOY,
+    estId: estId?+estId:null,
+    texto: txt
+  });
+  guardar('lc_notas_dir', notasDir);
+  cerrarModal('overlay-nota');
+  mostrarToast('Nota guardada ✓');
+  renderNotasDir();
+}
+function renderNotasDir(){
+  if(!notasDir.length){
+    document.getElementById('lista-notas-dir').innerHTML='<p style="font-size:13px;color:var(--texto-suave)">No hay notas aún.</p>';
+    return;
+  }
+  document.getElementById('lista-notas-dir').innerHTML = notasDir.map(n=>{
+    const e = n.estId ? estudiantes.find(s=>s.id===n.estId) : null;
+    return `<div class="nota-card">
+      <div class="nota-card-header">
+        <span class="nota-est">${e?e.nombre:'📋 Nota general del grupo'}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="nota-privada-tag">🔒 Privada</span>
+          <span class="nota-fecha">${formatFecha(n.fecha)}</span>
+          <button class="btn btn-sm btn-rojo" onclick="eliminarNota(${n.id})">Eliminar</button>
+        </div>
+      </div>
+      <div class="nota-texto">${n.texto}</div>
+    </div>`;
+  }).join('');
+}
+function eliminarNota(id){
+  if(!confirm('¿Eliminar esta nota?')) return;
+  notasDir = notasDir.filter(n=>n.id!==id);
+  guardar('lc_notas_dir', notasDir);
+  renderNotasDir();
+}
+
+// ============================================================
+// ESTUDIANTES
+// ============================================================
+function abrirModalEstudiante(id=null){
+  document.getElementById('est-edit-id').value = id||'';
+  if(id){
+    const e=estudiantes.find(s=>s.id===id);
+    document.getElementById('est-nombre').value=e.nombre;
+    document.getElementById('est-acudiente').value=e.acudiente;
+    document.getElementById('est-tel').value=e.tel||'';
+  } else {
+    document.getElementById('est-nombre').value='';
+    document.getElementById('est-acudiente').value='';
+    document.getElementById('est-tel').value='';
+  }
+  document.getElementById('overlay-est').classList.add('open');
+}
+function guardarEstudiante(){
+  const nombre = document.getElementById('est-nombre').value.trim();
+  if(!nombre){ mostrarToast('Ingresa el nombre'); return; }
+  const id = document.getElementById('est-edit-id').value;
+  const datos = {
+    nombre,
+    acudiente: document.getElementById('est-acudiente').value.trim(),
+    tel: document.getElementById('est-tel').value.trim()
+  };
+  if(id){
+    const idx=estudiantes.findIndex(e=>e.id===+id);
+    estudiantes[idx]={...estudiantes[idx],...datos};
+  } else {
+    datos.id = Date.now();
+    estudiantes.push(datos);
+  }
+  guardar('lc_estudiantes', estudiantes);
+  cerrarModal('overlay-est');
+  mostrarToast('Estudiante guardado ✓');
+  renderEstudiantes();
+}
+function eliminarEstudiante(id){
+  if(!confirm('¿Eliminar este estudiante? Esta acción no se puede deshacer.')) return;
+  estudiantes = estudiantes.filter(e=>e.id!==id);
+  guardar('lc_estudiantes', estudiantes);
+  renderEstudiantes();
+}
+function renderEstudiantes(){
+  document.getElementById('tbody-estudiantes').innerHTML = estudiantes.map((e,i)=>`
+    <tr>
+      <td style="color:var(--texto-suave)">${i+1}</td>
+      <td><strong style="font-size:13px">${e.nombre}</strong></td>
+      <td style="font-size:13px">${e.acudiente||'—'}</td>
+      <td style="font-size:13px">${e.tel||'—'}</td>
+      <td>
+        <div class="btn-group">
+          <button class="btn btn-sm" onclick="abrirModalEstudiante(${e.id})">Editar</button>
+          <button class="btn btn-sm btn-rojo" onclick="eliminarEstudiante(${e.id})">Eliminar</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+function cerrarModal(id){ document.getElementById(id).classList.remove('open'); }
+function mostrarToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+function formatFecha(f){
+  if(!f) return '';
+  const [y,m,d]=f.split('-');
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${+d} ${meses[+m-1]} ${y}`;
+}
+
+// Cerrar modales al clic fuera
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+
+// ============================================================
+// FASE 2 — AUTENTICACIÓN Y MODOS
+// ============================================================
+const PIN_DIRECTOR = '1234'; // PIN por defecto director — cambiar en producción
+let modoActual = null;   // 'director' | 'docente'
+let materiaDocente = null; // materia asignada al docente logueado
+let rolSeleccionado = null;
+
+let materias = cargar('lc_materias', [
+  {id:'mat1', nombre:'Matemáticas',   docente:'Prof. González', pin:'1111'},
+  {id:'mat2', nombre:'Español',        docente:'Prof. Rojas',    pin:'2222'},
+  {id:'mat3', nombre:'Ciencias',       docente:'Prof. Pérez',    pin:'3333'},
+  {id:'mat4', nombre:'Sociales',       docente:'Prof. Martínez', pin:'4444'},
+  {id:'mat5', nombre:'Tecnología',     docente:'Profe Luis',     pin:'5678'},
+  {id:'mat6', nombre:'Ética y Valores',docente:'Profe Luis',     pin:'5678'},
+]);
+
+// notasAc: { materiaId: { periodo: { estId: nota } } }
+let notasAc = cargar('lc_notas_ac', {});
+// actividades: []
+let actividades = cargar('lc_actividades', []);
+// entregasAc: { actividadId: { estId: bool } }
+let entregasAc = cargar('lc_entregas', {});
+
+let materiaActualAc = materias[0]?.id || null;
+
+function seleccionarRol(rol){
+  rolSeleccionado = rol;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('role-btn-'+( rol==='director'?'dir':'doc')).classList.add('selected');
+  document.getElementById('pin-area').style.display = 'block';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('login-acceso-rapido').style.display = 'none';
+  if(rol==='director'){
+    document.getElementById('pin-hint').textContent = 'PIN del director de grupo';
+  } else {
+    document.getElementById('pin-hint').textContent = 'PIN asignado a tu materia';
+  }
+  setTimeout(()=>document.getElementById('pin-input').focus(),100);
+}
+
+function volverSeleccion(){
+  document.getElementById('pin-area').style.display='none';
+  document.getElementById('login-acceso-rapido').style.display='block';
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  rolSeleccionado=null;
+}
+
+function verificarPin(){
+  const pin = document.getElementById('pin-input').value.trim();
+  if(rolSeleccionado==='director'){
+    if(pin===PIN_DIRECTOR){ entrar('director', null); }
+    else{ document.getElementById('pin-error').textContent='PIN incorrecto. Intenta de nuevo.'; }
+  } else {
+    const mat = materias.find(m=>m.pin===pin);
+    if(mat){ entrar('docente', mat); }
+    else{ document.getElementById('pin-error').textContent='PIN no reconocido. Verifica con el director.'; }
+  }
+}
+
+function entrarSinPin(){
+  entrar('director', null);
+}
+
+function entrar(modo, materia){
+  modoActual = modo;
+  materiaDocente = materia;
+  document.getElementById('pantalla-login').style.display='none';
+  actualizarModoUI();
+  renderInicio();
+}
+
+function cambiarModo(){
+  document.getElementById('pantalla-login').style.display='flex';
+  document.getElementById('pin-area').style.display='none';
+  document.getElementById('login-acceso-rapido').style.display='block';
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('selected'));
+  rolSeleccionado=null;
+  modoActual=null;
+}
+
+function actualizarModoUI(){
+  const esDir = modoActual==='director';
+  const badge = esDir
+    ? '<span class="modo-badge modo-director">🧑‍💼 Director</span>'
+    : `<span class="modo-badge modo-docente">👨‍🏫 ${materiaDocente?.nombre||'Docente'}</span>`;
+  document.getElementById('modo-badge-sidebar').innerHTML = badge;
+  document.getElementById('modo-badge-top').innerHTML = badge;
+  document.getElementById('sidebar-rol-label').textContent =
+    esDir ? 'Director de grupo · 8°' : `Docente · ${materiaDocente?.nombre||''}`;
+
+  // Mostrar/ocultar nav items según rol
+  const soloDirector = ['nav-asistencia','nav-disciplina','nav-notas','nav-estudiantes'];
+  soloDirector.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = esDir ? '' : 'none';
+  });
+}
+
+// ============================================================
+// MÓDULO ACADÉMICO — VERSIÓN 3 (6 secciones ponderadas)
+// ============================================================
+// Estructura notasAc[materiaId][periodo] = {
+//   columnas: [{id, nombre}],          // actividades del docente
+//   actividades: { estId: { colId: nota } },
+//   evaluaciones: { estId: { auto, coe, hetero } },
+//   examenes: { estId: { exf, icfes } }
+// }
+
+function getNota(periodo){
+  if(!notasAc[materiaActualAc]) notasAc[materiaActualAc]={};
+  if(!notasAc[materiaActualAc][periodo]) notasAc[materiaActualAc][periodo]={
+    columnas:[], actividades:{}, evaluaciones:{}, examenes:{}
+  };
+  return notasAc[materiaActualAc][periodo];
+}
+
+function getPesos(){
+  const v = k => Math.max(0, parseFloat(document.getElementById(k)?.value)||0);
+  return {
+    act:    v('peso-act'),
+    auto:   v('peso-auto'),
+    coe:    v('peso-coe'),
+    hetero: v('peso-hetero'),
+    exf:    v('peso-exf'),
+    icfes:  v('peso-icfes')
+  };
+}
+
+function validarPesos(){
+  const p = getPesos();
+  const total = Object.values(p).reduce((a,b)=>a+b,0);
+  const badge = document.getElementById('pesos-total-badge');
+  if(badge){
+    badge.textContent = `Total: ${total}%`;
+    badge.className = `badge ${total===100?'badge-verde':total<100?'badge-ambar':'badge-rojo'}`;
+  }
+  recalcularNotasFinales();
+}
+
+function promedioActividades(datos, columnas){
+  if(!columnas.length) return null;
+  const vals = columnas.map(c=>parseFloat(datos?.[c.id])||null).filter(v=>v!==null);
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+function notaFinalEstudiante(estId, periodo){
+  const nd = getNota(periodo);
+  const p  = getPesos();
+  const total = Object.values(p).reduce((a,b)=>a+b,0);
+  if(total===0) return null;
+
+  const promAct   = promedioActividades(nd.actividades?.[estId], nd.columnas||[]);
+  const ev        = nd.evaluaciones?.[estId] || {};
+  const ex        = nd.examenes?.[estId]     || {};
+
+  const auto   = parseFloat(ev.auto)   || null;
+  const coe    = parseFloat(ev.coe)    || null;
+  const hetero = parseFloat(ev.hetero) || null;
+  const exf    = parseFloat(ex.exf)    || null;
+  const icfes  = parseFloat(ex.icfes)  || null;
+
+  let suma=0, pesoUsado=0;
+  if(promAct!==null){ suma += promAct*(p.act/100);   pesoUsado += p.act; }
+  if(auto!==null)   { suma += auto*(p.auto/100);     pesoUsado += p.auto; }
+  if(coe!==null)    { suma += coe*(p.coe/100);       pesoUsado += p.coe; }
+  if(hetero!==null) { suma += hetero*(p.hetero/100); pesoUsado += p.hetero; }
+  if(exf!==null)    { suma += exf*(p.exf/100);       pesoUsado += p.exf; }
+  if(icfes!==null)  { suma += icfes*(p.icfes/100);   pesoUsado += p.icfes; }
+
+  if(pesoUsado===0) return null;
+  // Escalar al peso total para dar nota proporcional a lo ingresado
+  return (suma / (pesoUsado/100)).toFixed(2);
+}
+
+function semPill(val){
+  if(val===null||val===undefined||val==='') return '<span class="semaforo-pill sp-vacio">—</span>';
+  const n=parseFloat(val);
+  const cls = n>=3?'sp-verde':n>=2?'sp-ambar':'sp-rojo';
+  return `<span class="semaforo-pill ${cls}">${parseFloat(n.toFixed(2))}</span>`;
+}
+
+function renderAcademico(){
+  const periodo = document.getElementById('periodo-sel')?.value || 'P1';
+  const mats = modoActual==='docente' && materiaDocente ? [materiaDocente] : materias;
+
+  // Tabs
+  const tabs = document.getElementById('materia-tabs-cont');
+  if(!tabs) return;
+  tabs.innerHTML = mats.map(m=>`
+    <div class="materia-tab ${m.id===materiaActualAc?'activa':''}"
+         onclick="cambiarMateriaAc('${m.id}')">
+      ${m.nombre}
+    </div>`).join('') +
+    (modoActual==='director'
+      ? '<div class="materia-tab" onclick="abrirModalMaterias()" style="border-style:dashed">+ Gestionar</div>'
+      : '');
+
+  if(!materiaActualAc && mats.length) materiaActualAc = mats[0].id;
+  const mat = materias.find(m=>m.id===materiaActualAc);
+  const tit = document.getElementById('titulo-materia-ac');
+  if(tit) tit.textContent = mat ? `${mat.nombre} — ${periodo}` : 'Selecciona una materia';
+
+  validarPesos();
+  renderTablaActividades(periodo);
+  renderTablaEvaluaciones(periodo);
+  renderTablaExamenes(periodo);
+  recalcularNotasFinales();
+}
+
+// ---------- SECCIÓN 1: ACTIVIDADES ----------
+function agregarColumnaActividad(){
+  const periodo = document.getElementById('periodo-sel').value;
+  const nd = getNota(periodo);
+  const id = 'col'+Date.now();
+  nd.columnas.push({id, nombre:'Nueva actividad'});
+  guardar('lc_notas_ac', notasAc);
+  renderTablaActividades(periodo);
+  recalcularNotasFinales();
+}
+
+function eliminarColumnaActividad(colId){
+  const periodo = document.getElementById('periodo-sel').value;
+  const nd = getNota(periodo);
+  nd.columnas = nd.columnas.filter(c=>c.id!==colId);
+  // Limpiar notas de esa columna
+  Object.keys(nd.actividades||{}).forEach(eid=>{
+    delete nd.actividades[eid][colId];
+  });
+  guardar('lc_notas_ac', notasAc);
+  renderTablaActividades(periodo);
+  recalcularNotasFinales();
+}
+
+function renderTablaActividades(periodo){
+  const nd = getNota(periodo);
+  const cols = nd.columnas || [];
+  const cont = document.getElementById('tabla-actividades-notas');
+  if(!cont) return;
+
+  if(!cols.length){
+    cont.innerHTML = '<p style="font-size:13px;color:var(--texto-suave);padding:12px">Aún no hay actividades. Haz clic en "+ Agregar actividad" para comenzar.</p>';
+    return;
+  }
+
+  // Encabezado
+  let html = '<div class="tn-wrap"><div class="fila-est-ac encab-fila">';
+  html += '<div class="encab-top">';
+  html += '<div class="encab-num">#</div>';
+  html += '<div class="encab-nombre">Estudiante</div>';
+  cols.forEach(c=>{
+    html += `<div class="encab-nota">
+      <input class="nombre-act-input" value="${c.nombre}"
+        onchange="renombrarColumna('${c.id}','${periodo}',this.value)"
+        title="Haz clic para editar el nombre"/>
+      <button class="btn-del-act" onclick="eliminarColumnaActividad('${c.id}')" title="Eliminar actividad">✕</button>
+    </div>`;
+  });
+  html += '<div class="encab-prom">Prom.<br>activ.</div>';
+  html += '</div></div>';
+
+  // Filas de estudiantes
+  estudiantes.forEach((e,i)=>{
+    const actsEst = nd.actividades?.[e.id] || {};
+    const vals = cols.map(c=>parseFloat(actsEst[c.id])||null).filter(v=>v!==null);
+    const prom = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    html += `<div class="fila-est-ac">
+      <div class="cel-num">${i+1}</div>
+      <div class="cel-nombre" title="${e.nombre}">${e.nombre.split(' ').slice(0,2).join(' ')}</div>`;
+    cols.forEach(c=>{
+      html += `<div class="cel-nota">
+        <input type="number" class="nota-input-sm" min="0" max="5" step="0.1"
+          value="${actsEst[c.id]||''}" placeholder="—"
+          oninput="setNotaAct('${periodo}',${e.id},'${c.id}',this.value)"/>
+      </div>`;
+    });
+    html += `<div class="cel-prom-final">${semPill(prom!==null?prom.toFixed(2):null)}</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function renombrarColumna(colId, periodo, nombre){
+  const nd = getNota(periodo);
+  const col = nd.columnas.find(c=>c.id===colId);
+  if(col) col.nombre = nombre;
+  guardar('lc_notas_ac', notasAc);
+}
+
+function setNotaAct(periodo, estId, colId, val){
+  const nd = getNota(periodo);
+  if(!nd.actividades) nd.actividades={};
+  if(!nd.actividades[estId]) nd.actividades[estId]={};
+  nd.actividades[estId][colId] = val;
+  recalcularNotasFinales();
+}
+
+// ---------- SECCIÓN 2: EVALUACIONES ----------
+function renderTablaEvaluaciones(periodo){
+  const nd = getNota(periodo);
+  const cont = document.getElementById('tabla-evaluaciones');
+  if(!cont) return;
+
+  const secciones = [
+    {key:'auto',   label:'Autoevaluación',   desc:'El estudiante evalúa su propio desempeño'},
+    {key:'coe',    label:'Coevaluación',      desc:'Los estudiantes se evalúan entre sí'},
+    {key:'hetero', label:'Heteroevaluación',  desc:'El docente evalúa al estudiante'},
+  ];
+
+  let html = '<div class="tn-wrap">';
+  // Encabezado
+  html += '<div class="fila-est-ac encab-fila"><div class="encab-top">';
+  html += '<div class="encab-num">#</div>';
+  html += '<div class="encab-nombre">Estudiante</div>';
+  secciones.forEach(s=>{
+    html += `<div class="encab-nota" style="flex-direction:column;gap:1px" title="${s.desc}">
+      <span style="font-size:10px;font-weight:600;color:var(--cafe)">${s.label}</span>
+    </div>`;
+  });
+  html += '<div class="encab-prom">Prom.<br>eval.</div>';
+  html += '</div></div>';
+
+  estudiantes.forEach((e,i)=>{
+    const ev = nd.evaluaciones?.[e.id] || {};
+    const vals = ['auto','coe','hetero'].map(k=>parseFloat(ev[k])||null).filter(v=>v!==null);
+    const prom = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    html += `<div class="fila-est-ac">
+      <div class="cel-num">${i+1}</div>
+      <div class="cel-nombre" title="${e.nombre}">${e.nombre.split(' ').slice(0,2).join(' ')}</div>`;
+    secciones.forEach(s=>{
+      html += `<div class="cel-nota">
+        <input type="number" class="nota-input-sm" min="0" max="5" step="0.1"
+          value="${ev[s.key]||''}" placeholder="—"
+          oninput="setNotaEval('${periodo}',${e.id},'${s.key}',this.value)"/>
+      </div>`;
+    });
+    html += `<div class="cel-prom-final">${semPill(prom!==null?prom.toFixed(2):null)}</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function setNotaEval(periodo, estId, key, val){
+  const nd = getNota(periodo);
+  if(!nd.evaluaciones) nd.evaluaciones={};
+  if(!nd.evaluaciones[estId]) nd.evaluaciones[estId]={};
+  nd.evaluaciones[estId][key] = val;
+  recalcularNotasFinales();
+}
+
+// ---------- SECCIÓN 3: EXÁMENES ----------
+function renderTablaExamenes(periodo){
+  const nd = getNota(periodo);
+  const cont = document.getElementById('tabla-examenes');
+  if(!cont) return;
+
+  const secciones = [
+    {key:'exf',   label:'Examen final',      desc:'Evaluación escrita del período'},
+    {key:'icfes', label:'Examen tipo ICFES',  desc:'Simulacro con preguntas de selección múltiple'},
+  ];
+
+  let html = '<div class="tn-wrap">';
+  html += '<div class="fila-est-ac encab-fila"><div class="encab-top">';
+  html += '<div class="encab-num">#</div>';
+  html += '<div class="encab-nombre">Estudiante</div>';
+  secciones.forEach(s=>{
+    html += `<div class="encab-nota" style="flex-direction:column;gap:1px" title="${s.desc}">
+      <span style="font-size:10px;font-weight:600;color:var(--cafe)">${s.label}</span>
+    </div>`;
+  });
+  html += '<div class="encab-prom">Prom.<br>exám.</div>';
+  html += '</div></div>';
+
+  estudiantes.forEach((e,i)=>{
+    const ex = nd.examenes?.[e.id] || {};
+    const vals = ['exf','icfes'].map(k=>parseFloat(ex[k])||null).filter(v=>v!==null);
+    const prom = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    html += `<div class="fila-est-ac">
+      <div class="cel-num">${i+1}</div>
+      <div class="cel-nombre" title="${e.nombre}">${e.nombre.split(' ').slice(0,2).join(' ')}</div>`;
+    secciones.forEach(s=>{
+      html += `<div class="cel-nota">
+        <input type="number" class="nota-input-sm" min="0" max="5" step="0.1"
+          value="${ex[s.key]||''}" placeholder="—"
+          oninput="setNotaExamen('${periodo}',${e.id},'${s.key}',this.value)"/>
+      </div>`;
+    });
+    html += `<div class="cel-prom-final">${semPill(prom!==null?prom.toFixed(2):null)}</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function setNotaExamen(periodo, estId, key, val){
+  const nd = getNota(periodo);
+  if(!nd.examenes) nd.examenes={};
+  if(!nd.examenes[estId]) nd.examenes[estId]={};
+  nd.examenes[estId][key] = val;
+  recalcularNotasFinales();
+}
+
+// ---------- NOTA FINAL PONDERADA ----------
+function recalcularNotasFinales(){
+  const periodo = document.getElementById('periodo-sel')?.value || 'P1';
+  const cont = document.getElementById('tabla-nota-final');
+  if(!cont) return;
+
+  const p = getPesos();
+  const total = Object.values(p).reduce((a,b)=>a+b,0);
+
+  let html = `<div class="tn-wrap">
+    <div class="fila-est-ac encab-fila"><div class="encab-top">
+      <div class="encab-num">#</div>
+      <div class="encab-nombre">Estudiante</div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">Actividades<br><span style="color:var(--texto-suave)">${p.act}%</span></span></div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">Auto.<br><span style="color:var(--texto-suave)">${p.auto}%</span></span></div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">Coev.<br><span style="color:var(--texto-suave)">${p.coe}%</span></span></div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">Hetero.<br><span style="color:var(--texto-suave)">${p.hetero}%</span></span></div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">Ex. final<br><span style="color:var(--texto-suave)">${p.exf}%</span></span></div>
+      <div class="encab-nota" style="width:80px"><span style="font-size:10px;font-weight:600;color:var(--cafe)">ICFES<br><span style="color:var(--texto-suave)">${p.icfes}%</span></span></div>
+      <div class="encab-prom" style="min-width:70px;font-size:11px;font-weight:700;color:var(--cafe)">NOTA<br>FINAL</div>
+    </div></div>`;
+
+  const nd = getNota(periodo);
+  estudiantes.forEach((e,i)=>{
+    const actsEst = nd.actividades?.[e.id]||{};
+    const cols    = nd.columnas||[];
+    const ev      = nd.evaluaciones?.[e.id]||{};
+    const ex      = nd.examenes?.[e.id]||{};
+
+    const promAct = promedioActividades(actsEst, cols);
+    const auto    = parseFloat(ev.auto)||null;
+    const coe     = parseFloat(ev.coe)||null;
+    const hetero  = parseFloat(ev.hetero)||null;
+    const exf     = parseFloat(ex.exf)||null;
+    const icfes   = parseFloat(ex.icfes)||null;
+
+    let suma=0, pesoUsado=0;
+    const aportes = {act:promAct, auto, coe, hetero, exf, icfes};
+    const claves  = ['act','auto','coe','hetero','exf','icfes'];
+    claves.forEach(k=>{
+      if(aportes[k]!==null){ suma+=aportes[k]*(p[k]/100); pesoUsado+=p[k]; }
+    });
+    const notaFin = pesoUsado>0 ? (suma/(pesoUsado/100)).toFixed(2) : null;
+
+    html += `<div class="fila-est-ac" style="background:${notaFin&&parseFloat(notaFin)>=3?'':''}">
+      <div class="cel-num">${i+1}</div>
+      <div class="cel-nombre" title="${e.nombre}">${e.nombre.split(' ').slice(0,2).join(' ')}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(promAct!==null?promAct.toFixed(2):null)}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(auto)}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(coe)}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(hetero)}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(exf)}</div>
+      <div class="cel-nota" style="width:80px;justify-content:center">${semPill(icfes)}</div>
+      <div class="cel-prom-final" style="min-width:70px;font-size:14px">${notaFin
+        ? `<span style="font-weight:700;color:${parseFloat(notaFin)>=3?'var(--verde)':parseFloat(notaFin)>=2?'var(--ambar)':'var(--rojo)'}">${notaFin}</span>`
+        : '<span style="color:var(--texto-suave);font-size:12px">Sin datos</span>'}</div>
+    </div>`;
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+
+function cambiarMateriaAc(id){
+  materiaActualAc = id;
+  renderAcademico();
+}
+
+function guardarNotasAc(){
+  const periodo = document.getElementById('periodo-sel').value;
+  // Los datos ya se guardan en tiempo real al ingresar cada nota.
+  // Este botón hace una persistencia final explícita y recalcula.
+  guardar('lc_notas_ac', notasAc);
+  mostrarToast('Notas guardadas ✓');
+  renderAcademico();
+}
+
+function promedioGeneral(estId){
+  // Usa nota final ponderada del período más reciente con datos
+  const periodos=['P4','P3','P2','P1'];
+  let notas=[];
+  materias.forEach(m=>{
+    const matPrev = materiaActualAc;
+    materiaActualAc = m.id;
+    for(const p of periodos){
+      if(!(notasAc[m.id]||{})[p]) continue;
+      const nf = notaFinalEstudiante(estId, p);
+      if(nf!==null){ notas.push(parseFloat(nf)); break; }
+    }
+    materiaActualAc = matPrev;
+  });
+  return notas.length ? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(1) : null;
+}
+
+// ============================================================
+// ACTIVIDADES
+// ============================================================
+function abrirModalActividad(){
+  const sel = document.getElementById('act-materia-sel');
+  const mats = modoActual==='docente' && materiaDocente ? [materiaDocente] : materias;
+  sel.innerHTML = mats.map(m=>`<option value="${m.id}">${m.nombre}</option>`).join('');
+  document.getElementById('act-fecha').value = HOY;
+  document.getElementById('act-titulo').value = '';
+  document.getElementById('act-desc').value = '';
+  document.getElementById('overlay-act').classList.add('open');
+}
+
+function guardarActividad(){
+  const titulo = document.getElementById('act-titulo').value.trim();
+  if(!titulo){ mostrarToast('Escribe un título'); return; }
+  const act = {
+    id: 'act'+Date.now(),
+    materiaId: document.getElementById('act-materia-sel').value,
+    fecha: document.getElementById('act-fecha').value,
+    titulo,
+    desc: document.getElementById('act-desc').value.trim()
+  };
+  actividades.unshift(act);
+  guardar('lc_actividades', actividades);
+  // Inicializar entregas en false
+  entregasAc[act.id] = {};
+  estudiantes.forEach(e=>{ entregasAc[act.id][e.id]=false; });
+  guardar('lc_entregas', entregasAc);
+  cerrarModal('overlay-act');
+  mostrarToast('Actividad creada ✓');
+  renderActividades();
+}
+
+function renderActividades(){
+  // Llenar filtro de materias
+  const filterSel = document.getElementById('act-materia-filter');
+  filterSel.innerHTML = '<option value="">Todas las materias</option>' +
+    materias.map(m=>`<option value="${m.id}">${m.nombre}</option>`).join('');
+
+  const filtro = filterSel.value;
+  const mats = modoActual==='docente' && materiaDocente ? [materiaDocente.id] : null;
+  const datos = actividades.filter(a=>{
+    if(mats && !mats.includes(a.materiaId)) return false;
+    if(filtro && a.materiaId!==filtro) return false;
+    return true;
+  });
+
+  // Resumen
+  let totalEnt=0, totalPend=0;
+  actividades.forEach(a=>{
+    const ent = Object.values(entregasAc[a.id]||{});
+    totalEnt += ent.filter(v=>v).length;
+    totalPend += ent.filter(v=>!v).length;
+  });
+  document.getElementById('resumen-actividades').innerHTML = `
+    <div class="grid-4">
+      <div class="stat-box"><div class="stat-n azul-n">${actividades.length}</div><div class="stat-l">Actividades</div></div>
+      <div class="stat-box"><div class="stat-n verde-n">${totalEnt}</div><div class="stat-l">Entregas recibidas</div></div>
+      <div class="stat-box"><div class="stat-n rojo-n">${totalPend}</div><div class="stat-l">Pendientes</div></div>
+      <div class="stat-box"><div class="stat-n ambar-n">${actividades.filter(a=>{const e=Object.values(entregasAc[a.id]||{});return e.some(v=>!v);}).length}</div><div class="stat-l">Con pendientes</div></div>
+    </div>`;
+
+  if(!datos.length){
+    document.getElementById('lista-actividades-cont').innerHTML=
+      '<p style="font-size:13px;color:var(--texto-suave)">No hay actividades registradas.</p>';
+    return;
+  }
+
+  document.getElementById('lista-actividades-cont').innerHTML = datos.map(a=>{
+    const mat = materias.find(m=>m.id===a.materiaId);
+    const entregas = entregasAc[a.id] || {};
+    const entregados = Object.values(entregas).filter(v=>v).length;
+    const total = estudiantes.length;
+    const pct = total ? Math.round((entregados/total)*100) : 0;
+    return `<div class="act-item">
+      <div class="act-header">
+        <div>
+          <span class="act-titulo">${a.titulo}</span>
+          <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
+            <span class="badge badge-azul">${mat?.nombre||'Sin materia'}</span>
+            <span class="badge badge-ambar">Entrega: ${formatFecha(a.fecha)}</span>
+            <span class="badge ${pct===100?'badge-verde':pct>50?'badge-ambar':'badge-rojo'}">${entregados}/${total} entregaron</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="toggleEntregaDetalle('det-${a.id}')">Ver entregas</button>
+          <button class="btn btn-sm btn-rojo" onclick="eliminarActividad('${a.id}')">Eliminar</button>
+        </div>
+      </div>
+      ${a.desc?`<p style="font-size:12px;color:var(--gris-texto);margin-bottom:8px">${a.desc}</p>`:''}
+      <div class="barra-rank" style="margin-bottom:8px"><div class="barra-fill" style="width:${pct}%"></div></div>
+      <div class="act-entrega" id="det-${a.id}" style="display:none">
+        ${estudiantes.map(e=>`
+          <div class="est-entrega-row">
+            <span class="est-ent-nombre">${e.nombre}</span>
+            <label class="toggle-entrega">
+              <input type="checkbox" ${entregas[e.id]?'checked':''}
+                onchange="toggleEntrega('${a.id}',${e.id},this.checked)">
+              <div class="chk-box"></div>
+              <span class="ent-label">${entregas[e.id]?'Entregó':'Pendiente'}</span>
+            </label>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleEntregaDetalle(id){
+  const el = document.getElementById(id);
+  el.style.display = el.style.display==='none'?'block':'none';
+}
+
+function toggleEntrega(actId, estId, val){
+  if(!entregasAc[actId]) entregasAc[actId]={};
+  entregasAc[actId][estId] = val;
+  guardar('lc_entregas', entregasAc);
+}
+
+function eliminarActividad(id){
+  if(!confirm('¿Eliminar esta actividad?')) return;
+  actividades = actividades.filter(a=>a.id!==id);
+  delete entregasAc[id];
+  guardar('lc_actividades', actividades);
+  guardar('lc_entregas', entregasAc);
+  renderActividades();
+}
+
+// ============================================================
+// MATERIAS CONFIG
+// ============================================================
+function abrirModalMaterias(){
+  renderMateriasConfig();
+  document.getElementById('overlay-materias').classList.add('open');
+}
+
+function renderMateriasConfig(){
+  document.getElementById('lista-materias-config').innerHTML = materias.map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gris-borde)">
+      <span style="flex:1;font-size:13px"><b>${m.nombre}</b> — ${m.docente}</span>
+      <span class="badge badge-azul">PIN: ${m.pin}</span>
+      <button class="btn btn-sm btn-rojo" onclick="eliminarMateria('${m.id}')">✕</button>
+    </div>`).join('');
+}
+
+function agregarMateria(){
+  const nombre = document.getElementById('nueva-materia-nombre').value.trim();
+  const docente = document.getElementById('nueva-materia-docente').value.trim();
+  const pin = document.getElementById('nueva-materia-pin').value.trim();
+  if(!nombre||!pin){ mostrarToast('Nombre y PIN son obligatorios'); return; }
+  if(pin.length!==4||isNaN(pin)){ mostrarToast('El PIN debe ser 4 dígitos'); return; }
+  materias.push({id:'mat'+Date.now(), nombre, docente, pin});
+  guardar('lc_materias', materias);
+  document.getElementById('nueva-materia-nombre').value='';
+  document.getElementById('nueva-materia-docente').value='';
+  document.getElementById('nueva-materia-pin').value='';
+  renderMateriasConfig();
+  mostrarToast('Materia agregada ✓');
+}
+
+function eliminarMateria(id){
+  if(!confirm('¿Eliminar esta materia?')) return;
+  materias = materias.filter(m=>m.id!==id);
+  guardar('lc_materias', materias);
+  renderMateriasConfig();
+}
+
+// ============================================================
+// RANKING MEJORADO (incluye promedio académico)
+// ============================================================
+const _renderRankingOriginal = renderRanking;
+renderRanking = function(){
+  const orden = document.getElementById('orden-rank').value;
+  const contDisc={};
+  disciplina.forEach(d=>{ contDisc[d.estId]=(contDisc[d.estId]||0)+1; });
+
+  const data = estudiantes.map(e=>{
+    const totalDias = Object.keys(asistencia).length;
+    const presentes = totalDias ? Object.values(asistencia).filter(d=>d[e.id]==='P').length : 0;
+    const pct = totalDias ? Math.round((presentes/totalDias)*100) : 100;
+    const novedades = contDisc[e.id]||0;
+    const promAc = promedioGeneral(e.id);
+    const score = pct*0.4 + (promAc?parseFloat(promAc)*10:0)*0.5 - novedades*3;
+    return {...e, pct, novedades, promAc, score, totalDias};
+  });
+
+  if(orden==='asistencia') data.sort((a,b)=>b.pct-a.pct);
+  else if(orden==='disciplina') data.sort((a,b)=>a.novedades-b.novedades);
+  else if(orden==='nombre') data.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  else data.sort((a,b)=>b.score-a.score);
+
+  document.getElementById('tbody-ranking').innerHTML = data.map((e,i)=>{
+    const medalClass = i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+    const prom = e.promAc ? `<span style="font-weight:600;color:${parseFloat(e.promAc)>=3?'var(--verde)':'var(--rojo)'}">${e.promAc}</span>` : '<span style="color:var(--texto-suave)">—</span>';
+    return `<tr>
+      <td><span class="pos-medal ${medalClass}">${i+1}</span></td>
+      <td><strong style="font-size:13px">${e.nombre}</strong></td>
+      <td>
+        <div style="font-size:13px;font-weight:500">${e.totalDias?e.pct+'%':'Sin datos'}</div>
+        ${e.totalDias?`<div class="barra-rank"><div class="barra-fill" style="width:${e.pct}%"></div></div>`:''}
+      </td>
+      <td>${prom}</td>
+      <td><span class="badge ${e.novedades===0?'badge-verde':e.novedades<3?'badge-ambar':'badge-rojo'}">${e.novedades}</span></td>
+      <td><strong style="color:var(--cafe)">${e.totalDias||e.promAc?e.score.toFixed(0):'—'}</strong></td>
+    </tr>`;
+  }).join('');
+};
+
+// Actualizar tabla ranking (headers)
+document.addEventListener('DOMContentLoaded', ()=>{});
+// Parchear header del ranking para columna promedio
+function patchRankingHeader(){
+  const thead = document.querySelector('#vista-ranking .tabla-rank thead tr');
+  if(thead && thead.children.length===5){
+    const th = document.createElement('th');
+    th.textContent='Prom. ac.';
+    thead.insertBefore(th, thead.children[3]);
+  }
+}
+
+// ============================================================
+// NAVEGACIÓN — EXTENDER para nuevas vistas
+// ============================================================
+const _mostrarVistaOriginal = mostrarVista;
+mostrarVista = function(v){
+  const vistas = ['inicio','asistencia','disciplina','ranking','notas','academico','actividades','estudiantes'];
+  vistas.forEach(n=>{
+    const el = document.getElementById('vista-'+n);
+    if(el) el.style.display = n===v ? 'block' : 'none';
+    const nav = document.getElementById('nav-'+n);
+    if(nav) nav.classList.toggle('active', n===v);
+  });
+  if(v==='asistencia') renderAsistencia();
+  if(v==='disciplina') renderDisciplina();
+  if(v==='ranking'){ patchRankingHeader(); renderRanking(); }
+  if(v==='notas')      renderNotasDir();
+  if(v==='academico'){ document.getElementById('periodo-sel').value='P1'; renderAcademico(); }
+  if(v==='actividades') renderActividades();
+  if(v==='estudiantes') renderEstudiantes();
+  if(v==='inicio')     renderInicio();
+};
+
+
+// ============================================================
+// FASE 3 — INFORMES A PADRES
+// ============================================================
+let configApp = cargar('lc_config', {
+  nombreIE: 'I.E. Las Cruces',
+  grado: '8°',
+  director: 'Profe Luis',
+  anio: '2026',
+  sheetsId: '',
+  sheetsApiKey: ''
+});
+
+// Generar código único por estudiante (determinístico, basado en id)
+function codigoEstudiante(estId){
+  const s = String(estId * 7919 + 31337);
+  return s.slice(-4).padStart(4,'0');
+}
+
+// Construir URL del portal del padre
+function urlPortal(estId){
+  const base = window.location.href.split('?')[0];
+  return `${base}?portal=1&est=${estId}&code=${codigoEstudiante(estId)}`;
+}
+
+// ---- Datos del informe de un estudiante ----
+function datosInforme(estId, periodo, semana){
+  const e = estudiantes.find(s=>s.id===estId);
+  if(!e) return null;
+
+  // Asistencia semana actual
+  const hoy = new Date();
+  const lunes = new Date(hoy); lunes.setDate(hoy.getDate()-((hoy.getDay()+6)%7));
+  const fechasSemana=[];
+  for(let i=0;i<5;i++){const d=new Date(lunes);d.setDate(lunes.getDate()+i);fechasSemana.push(d.toISOString().split('T')[0]);}
+  const asistSemana = fechasSemana.map(f=>({fecha:f, estado:(asistencia[f]||{})[estId]||null}));
+  const fallasSem   = asistSemana.filter(a=>a.estado==='F').length;
+  const tardSem     = asistSemana.filter(a=>a.estado==='T').length;
+  const totalFallas = Object.values(asistencia).filter(d=>d[estId]==='F').length;
+
+  // Actividades pendientes
+  const pendientes = actividades.filter(a=>{
+    return !(entregasAc[a.id]||{})[estId];
+  }).map(a=>{
+    const mat=materias.find(m=>m.id===a.materiaId);
+    return {titulo:a.titulo, materia:mat?.nombre||'', fecha:a.fecha};
+  });
+
+  // Notas por materia (nota final del período)
+  const notasPorMateria = materias.map(m=>{
+    const matPrev = materiaActualAc;
+    materiaActualAc = m.id;
+    const nf = notaFinalEstudiante(estId, periodo);
+    materiaActualAc = matPrev;
+    return {materia:m.nombre, nota:nf};
+  }).filter(x=>x.nota!==null);
+
+  // Novedades disciplinarias
+  const novedades = disciplina.filter(d=>d.estId===estId).slice(0,3);
+
+  return {estudiante:e, fallasSem, tardSem, totalFallas, pendientes, notasPorMateria, novedades, periodo, semana, asistSemana};
+}
+
+// ---- Renderizar informe visual ----
+function htmlInforme(inf, modo='preview'){
+  if(!inf) return '<p style="color:var(--texto-suave)">Sin datos.</p>';
+  const {estudiante:e, fallasSem, tardSem, totalFallas, pendientes, notasPorMateria, novedades, periodo, asistSemana} = inf;
+  const dias=['Lu','Ma','Mi','Ju','Vi'];
+  const colores={P:'var(--verde)',F:'var(--rojo)',T:'var(--ambar)',E:'var(--azul)',null:'var(--gris-borde)'};
+
+  const semafAsist = fallasSem===0?'🟢':fallasSem<=2?'🟡':'🔴';
+  const semafPend  = pendientes.length===0?'🟢':pendientes.length<=2?'🟡':'🔴';
+
+  return `
+  <div class="informe-card">
+    <div class="informe-card-header">
+      <div>
+        <div class="informe-ie">${configApp.nombreIE} · Grado ${configApp.grado} · ${configApp.anio}</div>
+        <div class="informe-titulo">Informe de seguimiento — ${periodo}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;opacity:.7">Director de grupo</div>
+        <div style="font-size:12px;font-weight:600">${configApp.director}</div>
+      </div>
+    </div>
+    <div class="informe-body">
+
+      <!-- Estudiante -->
+      <div class="informe-seccion">
+        <div class="informe-seccion-titulo">Estudiante</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;flex-wrap:wrap;gap:4px">
+          <span><b>${e.nombre}</b></span>
+          <span style="color:var(--texto-suave)">Acudiente: ${e.acudiente||'—'}</span>
+        </div>
+      </div>
+
+      <!-- Asistencia semana -->
+      <div class="informe-seccion">
+        <div class="informe-seccion-titulo">${semafAsist} Asistencia de la semana</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          ${asistSemana.map((a,i)=>`
+            <div style="text-align:center;flex:1">
+              <div style="font-size:10px;color:var(--texto-suave)">${dias[i]}</div>
+              <div style="font-size:12px;font-weight:700;color:${colores[a.estado]||colores[null]};background:${a.estado?'var(--gris-bg)':'var(--gris-borde)'};border-radius:4px;padding:3px 0;margin-top:2px">${a.estado||'—'}</div>
+            </div>`).join('')}
+        </div>
+        <div class="informe-fila"><span>Fallas esta semana</span><span style="font-weight:600;color:${fallasSem>0?'var(--rojo)':'var(--verde)'}">${fallasSem}</span></div>
+        <div class="informe-fila"><span>Tardanzas esta semana</span><span style="font-weight:600;color:${tardSem>0?'var(--ambar)':'var(--verde)'}">${tardSem}</span></div>
+        <div class="informe-fila"><span>Total fallas acumuladas</span><span style="font-weight:600;color:${totalFallas>5?'var(--rojo)':totalFallas>2?'var(--ambar)':'var(--verde)'}">${totalFallas}</span></div>
+      </div>
+
+      <!-- Actividades pendientes -->
+      <div class="informe-seccion">
+        <div class="informe-seccion-titulo">${semafPend} Actividades pendientes (${pendientes.length})</div>
+        ${pendientes.length===0
+          ? '<p style="font-size:12px;color:var(--verde)">✅ No tiene actividades pendientes.</p>'
+          : pendientes.map(p=>`
+            <div class="informe-fila">
+              <span>${p.titulo} <span style="color:var(--texto-suave);font-size:11px">(${p.materia})</span></span>
+              <span style="color:var(--rojo);font-size:11px">Fecha: ${formatFecha(p.fecha)}</span>
+            </div>`).join('')}
+      </div>
+
+      <!-- Notas académicas -->
+      ${notasPorMateria.length ? `
+      <div class="informe-seccion">
+        <div class="informe-seccion-titulo">📊 Notas disponibles — ${periodo}</div>
+        ${notasPorMateria.map(n=>`
+          <div class="informe-fila">
+            <span>${n.materia}</span>
+            <span style="font-weight:700;color:${parseFloat(n.nota)>=3?'var(--verde)':parseFloat(n.nota)>=2?'var(--ambar)':'var(--rojo)'}">${n.nota}</span>
+          </div>`).join('')}
+      </div>` : ''}
+
+      <!-- Novedades disciplinarias -->
+      ${novedades.length ? `
+      <div class="informe-seccion">
+        <div class="informe-seccion-titulo">⚠️ Novedades disciplinarias recientes</div>
+        ${novedades.map(d=>`
+          <div class="informe-fila">
+            <span>${d.desc.substring(0,60)}${d.desc.length>60?'…':''}</span>
+            <span class="badge ${d.tipo==='grave'?'badge-rojo':d.tipo==='moderada'?'badge-ambar':'badge-azul'}">${d.tipo}</span>
+          </div>`).join('')}
+      </div>` : ''}
+
+    </div>
+    <div class="informe-footer">
+      Generado el ${formatFecha(HOY)} · ${configApp.nombreIE} · Grado ${configApp.grado}
+    </div>
+  </div>`;
+}
+
+function renderInformes(){
+  // Poblar selects
+  const sel = document.getElementById('inf-est-sel');
+  sel.innerHTML = estudiantes.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  actualizarTablaEstadoInformes();
+}
+
+function previsualizarInforme(){
+  const estId = +document.getElementById('inf-est-sel').value;
+  const periodo = document.getElementById('inf-periodo').value;
+  const semana  = document.getElementById('inf-semana').value;
+  const inf = datosInforme(estId, periodo, semana);
+  document.getElementById('inf-preview-cont').innerHTML = htmlInforme(inf);
+
+  const e = estudiantes.find(s=>s.id===estId);
+  const url = urlPortal(estId);
+  const codigo = codigoEstudiante(estId);
+  const msg = encodeURIComponent(
+    `*Informe escolar — ${configApp.nombreIE}*\n\n` +
+    `Estimado/a ${e?.acudiente||'acudiente'}, le compartimos el informe de seguimiento de *${e?.nombre}* correspondiente al ${periodo}.\n\n` +
+    `🔗 Enlace: ${url}\n🔑 Código de acceso: ${codigo}\n\n` +
+    `Atentamente, ${configApp.director}\nDirector/a de grupo · Grado ${configApp.grado}`
+  );
+  const tel = e?.tel ? e.tel.replace(/\D/g,'') : '';
+
+  document.getElementById('inf-compartir-cont').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--texto-suave);margin-bottom:4px">Código del estudiante</div>
+      <span class="portal-codigo">${codigo}</span>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--texto-suave);margin-bottom:4px">Enlace del portal</div>
+      <div style="font-size:11px;word-break:break-all;color:var(--azul);background:var(--azul-claro);padding:6px 8px;border-radius:var(--radio-sm)">${url}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a class="whatsapp-btn" href="https://wa.me/${tel}?text=${msg}" target="_blank">
+        💬 Enviar por WhatsApp${tel?` a ${e?.acudiente}`:''}
+      </a>
+      <button class="btn" onclick="copiarEnlace('${url}')">📋 Copiar enlace</button>
+      <button class="btn btn-verde" onclick="imprimirInforme(${estId},'${periodo}','${semana}')">🖨️ Imprimir / PDF</button>
+    </div>`;
+}
+
+function copiarEnlace(url){
+  navigator.clipboard?.writeText(url).then(()=>mostrarToast('Enlace copiado ✓'))
+    .catch(()=>{ prompt('Copia este enlace:', url); });
+}
+
+function imprimirInforme(estId, periodo, semana){
+  const inf = datosInforme(estId, periodo, semana);
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Informe — ${inf?.estudiante?.nombre||''}</title>
+    <style>
+      body{font-family:'Segoe UI',sans-serif;padding:20px;max-width:600px;margin:auto;font-size:13px}
+      .informe-card{border:1px solid #ccc;border-radius:8px;overflow:hidden}
+      .informe-card-header{background:#5C3A1E;color:#fff;padding:14px 16px;display:flex;justify-content:space-between}
+      .informe-titulo{font-size:15px;font-weight:600}
+      .informe-ie{font-size:11px;opacity:.7}
+      .informe-body{padding:14px 16px}
+      .informe-seccion{margin-bottom:14px}
+      .informe-seccion-titulo{font-size:11px;font-weight:700;text-transform:uppercase;color:#5C3A1E;border-bottom:1px solid #eee;padding-bottom:3px;margin-bottom:6px}
+      .informe-fila{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f0f0;font-size:12px}
+      .informe-footer{background:#f7f5f0;padding:8px 16px;font-size:11px;color:#888;text-align:center}
+      @media print{body{padding:0}}
+    </style></head><body>
+    ${htmlInforme(inf,'print')}
+    </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(), 400);
+}
+
+function generarTodosInformes(){
+  const periodo = document.getElementById('inf-periodo').value;
+  const semana  = document.getElementById('inf-semana').value;
+  actualizarTablaEstadoInformes();
+  mostrarToast(`Informes de ${periodo} · ${semana} listos ✓`);
+}
+
+function actualizarTablaEstadoInformes(){
+  const periodo = document.getElementById('inf-periodo')?.value||'P1';
+  const semana  = document.getElementById('inf-semana')?.value||'S1';
+  const lbl = document.getElementById('inf-semana-label');
+  if(lbl) lbl.textContent = `${periodo} · ${semana}`;
+
+  const cont = document.getElementById('tabla-inf-estado');
+  if(!cont) return;
+
+  cont.innerHTML = `<div style="overflow-x:auto"><table class="tabla-estados">
+    <thead><tr><th>#</th><th>Estudiante</th><th>Acudiente</th><th>Teléfono</th><th>Fallas sem.</th><th>Act. pend.</th><th>Código</th><th>Compartir</th></tr></thead>
+    <tbody>${estudiantes.map((e,i)=>{
+      const inf = datosInforme(e.id, periodo, semana);
+      const url = urlPortal(e.id);
+      const codigo = codigoEstudiante(e.id);
+      const tel = e.tel?e.tel.replace(/\D/g,''):'';
+      const msg = encodeURIComponent(
+        `*Informe escolar — ${configApp.nombreIE}*\nEstimado/a ${e.acudiente||'acudiente'}, informe de ${e.nombre} — ${periodo}.\n🔗 ${url}\n🔑 Código: ${codigo}\n${configApp.director}`
+      );
+      return `<tr>
+        <td style="color:var(--texto-suave)">${i+1}</td>
+        <td><b>${e.nombre}</b></td>
+        <td style="font-size:12px">${e.acudiente||'—'}</td>
+        <td style="font-size:12px">${e.tel||'—'}</td>
+        <td><span class="badge ${inf?.fallasSem>0?'badge-rojo':'badge-verde'}">${inf?.fallasSem??'—'}</span></td>
+        <td><span class="badge ${inf?.pendientes?.length>0?'badge-ambar':'badge-verde'}">${inf?.pendientes?.length??'—'}</span></td>
+        <td><span class="portal-codigo">${codigo}</span></td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <a class="btn btn-sm" style="background:#25D366;color:#fff;border-color:#25D366;text-decoration:none"
+               href="https://wa.me/${tel}?text=${msg}" target="_blank">💬 WA</a>
+            <button class="btn btn-sm" onclick="imprimirInforme(${e.id},'${periodo}','${semana}')">🖨️</button>
+            <button class="btn btn-sm" onclick="previsualizarYSeleccionar(${e.id})">👁️</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+function previsualizarYSeleccionar(estId){
+  document.getElementById('inf-est-sel').value = estId;
+  previsualizarInforme();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ============================================================
+// FASE 3 — PORTAL DE PADRES (se activa si URL tiene ?portal=1)
+// ============================================================
+function verificarModoPortal(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('portal')!=='1') return false;
+
+  const estId = +params.get('est');
+  const code  = params.get('code');
+  if(!estId || !code || code!==codigoEstudiante(estId)){
+    document.body.innerHTML = `<div style="font-family:sans-serif;text-align:center;padding:40px">
+      <h2 style="color:#A32D2D">Código de acceso incorrecto</h2>
+      <p>Verifica el enlace y el código enviado por el director de grupo.</p></div>`;
+    return true;
+  }
+
+  const inf = datosInforme(estId, 'P1', 'S1');
+  document.body.innerHTML = `
+    <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:20px auto;padding:0 16px">
+      <div style="text-align:center;padding:16px 0;color:#5C3A1E">
+        <div style="font-size:22px font-weight:700">🏫 ${configApp.nombreIE}</div>
+        <div style="font-size:13px;color:#888;margin-top:4px">Portal de seguimiento para familias</div>
+      </div>
+      ${htmlInforme(inf,'portal')}
+      <div style="text-align:center;padding:16px 0;font-size:11px;color:#aaa">
+        Este informe fue generado por ${configApp.director} · Grado ${configApp.grado}
+      </div>
+    </div>`;
+  return true;
+}
+
+// ============================================================
+// FASE 3 — GOOGLE SHEETS SYNC
+// ============================================================
+function guardarConfigSheets(){
+  const id  = document.getElementById('sheets-id').value.trim();
+  const key = document.getElementById('sheets-apikey').value.trim();
+  configApp.sheetsId     = id;
+  configApp.sheetsApiKey = key;
+  guardar('lc_config', configApp);
+  const badge = document.getElementById('sync-status-badge');
+  if(badge) badge.className = `badge ${id&&key?'badge-verde':'badge-ambar'}`;
+  if(badge) badge.textContent = id&&key?'Configurado':'Incompleto';
+  mostrarToast('Configuración guardada ✓');
+}
+
+function logSync(msg){
+  const log = document.getElementById('sync-log');
+  if(!log) return;
+  log.style.display='block';
+  log.innerHTML += `<div>${new Date().toLocaleTimeString()} — ${msg}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+async function testConexionSheets(){
+  const id  = configApp.sheetsId || document.getElementById('sheets-id').value.trim();
+  const key = configApp.sheetsApiKey || document.getElementById('sheets-apikey').value.trim();
+  if(!id||!key){ mostrarToast('Configura el ID y API Key primero'); return; }
+  logSync('⏳ Probando conexión con Google Sheets...');
+  try{
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}?key=${key}&fields=properties.title`;
+    const res = await fetch(url);
+    if(res.ok){
+      const data = await res.json();
+      logSync(`✅ Conexión exitosa. Hoja: "${data.properties?.title||'Sin nombre'}"`);
+      mostrarToast('Conexión exitosa ✓');
+    } else {
+      const err = await res.json();
+      logSync(`❌ Error ${res.status}: ${err.error?.message||'Sin detalles'}`);
+      mostrarToast('Error de conexión — ver log');
+    }
+  } catch(e){
+    logSync(`❌ Error de red: ${e.message}. Verifica tu conexión a internet.`);
+  }
+}
+
+async function sincronizarSheets(){
+  const id  = configApp.sheetsId;
+  const key = configApp.sheetsApiKey;
+  if(!id||!key){ mostrarToast('Configura Google Sheets primero'); mostrarVista('sync'); return; }
+
+  logSync('⏳ Iniciando sincronización...');
+
+  // Para escritura se necesita OAuth2. Con solo API Key se puede LEER.
+  // Aquí generamos un CSV descargable que el usuario puede pegar en Sheets manualmente,
+  // y también hacemos la lectura de datos compartidos.
+  logSync('📋 Generando datos para sincronizar...');
+
+  // Construir hoja de asistencia como CSV
+  const fechas = Object.keys(asistencia).sort();
+  let csvAsist = 'Estudiante,' + fechas.join(',') + '\n';
+  estudiantes.forEach(e=>{
+    csvAsist += `"${e.nombre}",` + fechas.map(f=>(asistencia[f]||{})[e.id]||'').join(',') + '\n';
+  });
+
+  // Descargar automáticamente el CSV de asistencia
+  descargarArchivo(csvAsist, 'asistencia_sync.csv', 'text/csv');
+  logSync('✅ Archivo CSV de asistencia generado y descargado.');
+  logSync('📌 Nota: Para escritura automática en Google Sheets se requiere configurar Google Apps Script en tu hoja.');
+  logSync('💡 Pega el CSV descargado en tu Google Sheet para mantener los datos sincronizados.');
+  logSync('📖 Consulta la guía de configuración para automatizar esto con Apps Script.');
+  mostrarToast('Datos exportados para sincronizar ✓');
+}
+
+// ============================================================
+// FASE 3 — EXPORTAR / IMPORTAR
+// ============================================================
+function descargarArchivo(contenido, nombre, tipo){
+  const blob = new Blob([contenido], {type:tipo});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=nombre; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportarJSON(){
+  const respaldo = {
+    version: '3.0',
+    fecha: HOY,
+    config: configApp,
+    estudiantes, asistencia, disciplina,
+    notasDir, notasAc, actividades, entregasAc, materias
+  };
+  descargarArchivo(JSON.stringify(respaldo, null, 2),
+    `respaldo_ie_lascruces_${HOY}.json`, 'application/json');
+  mostrarToast('Respaldo descargado ✓');
+}
+
+function exportarCSVAsistencia(){
+  const fechas = Object.keys(asistencia).sort();
+  let csv = 'Nº,Estudiante,Acudiente,' + fechas.map(f=>formatFecha(f)).join(',') + ',Total Fallas\n';
+  estudiantes.forEach((e,i)=>{
+    const fallas = fechas.filter(f=>(asistencia[f]||{})[e.id]==='F').length;
+    csv += `${i+1},"${e.nombre}","${e.acudiente||''}",` +
+      fechas.map(f=>(asistencia[f]||{})[e.id]||'').join(',') + `,${fallas}\n`;
+  });
+  descargarArchivo(csv, `asistencia_${HOY}.csv`, 'text/csv');
+  mostrarToast('CSV de asistencia descargado ✓');
+}
+
+function exportarCSVNotas(){
+  let csv = 'Estudiante,Materia,Período,Prom.Actividades,Autoevaluación,Coevaluación,Heteroevaluación,Examen Final,ICFES,Nota Final\n';
+  estudiantes.forEach(e=>{
+    materias.forEach(m=>{
+      ['P1','P2','P3','P4'].forEach(p=>{
+        const nd = (notasAc[m.id]||{})[p];
+        if(!nd) return;
+        const ev = nd.evaluaciones?.[e.id]||{};
+        const ex = nd.examenes?.[e.id]||{};
+        const cols = nd.columnas||[];
+        const promAct = promedioActividades(nd.actividades?.[e.id], cols);
+        const matPrev=materiaActualAc; materiaActualAc=m.id;
+        const nf = notaFinalEstudiante(e.id, p);
+        materiaActualAc=matPrev;
+        if(nf!==null){
+          csv += `"${e.nombre}","${m.nombre}",${p},${promAct?.toFixed(2)||''},${ev.auto||''},${ev.coe||''},${ev.hetero||''},${ex.exf||''},${ex.icfes||''},${nf}\n`;
+        }
+      });
+    });
+  });
+  descargarArchivo(csv, `notas_${HOY}.csv`, 'text/csv');
+  mostrarToast('CSV de notas descargado ✓');
+}
+
+function importarJSON(){
+  document.getElementById('file-import').click();
+}
+
+function procesarImport(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data.version||!data.estudiantes) throw new Error('Formato inválido');
+      if(!confirm(`¿Restaurar respaldo del ${data.fecha}? Esto reemplazará todos los datos actuales.`)) return;
+      if(data.estudiantes) { estudiantes=data.estudiantes; guardar('lc_estudiantes',estudiantes); }
+      if(data.asistencia)  { asistencia=data.asistencia;   guardar('lc_asistencia',asistencia); }
+      if(data.disciplina)  { disciplina=data.disciplina;   guardar('lc_disciplina',disciplina); }
+      if(data.notasDir)    { notasDir=data.notasDir;       guardar('lc_notas_dir',notasDir); }
+      if(data.notasAc)     { notasAc=data.notasAc;         guardar('lc_notas_ac',notasAc); }
+      if(data.actividades) { actividades=data.actividades; guardar('lc_actividades',actividades); }
+      if(data.entregasAc)  { entregasAc=data.entregasAc;   guardar('lc_entregas',entregasAc); }
+      if(data.materias)    { materias=data.materias;       guardar('lc_materias',materias); }
+      if(data.config)      { configApp={...configApp,...data.config}; guardar('lc_config',configApp); }
+      mostrarToast('Respaldo restaurado ✓');
+      renderInicio();
+    } catch(e){
+      mostrarToast('Error: archivo inválido');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// FASE 3 — CONFIG GENERAL
+// ============================================================
+function cargarConfigEnFormulario(){
+  const cfg = configApp;
+  const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
+  set('cfg-nombre-ie', cfg.nombreIE);
+  set('cfg-grado',     cfg.grado);
+  set('cfg-director',  cfg.director);
+  set('cfg-anio',      cfg.anio);
+  set('sheets-id',     cfg.sheetsId);
+  set('sheets-apikey', cfg.sheetsApiKey);
+  const badge = document.getElementById('sync-status-badge');
+  if(badge){
+    badge.className = `badge ${cfg.sheetsId&&cfg.sheetsApiKey?'badge-verde':'badge-ambar'}`;
+    badge.textContent = cfg.sheetsId&&cfg.sheetsApiKey?'Configurado':'No configurado';
+  }
+}
+
+function guardarConfigGeneral(){
+  const get = id=>{ const el=document.getElementById(id); return el?el.value.trim():''; };
+  configApp.nombreIE = get('cfg-nombre-ie')||configApp.nombreIE;
+  configApp.grado    = get('cfg-grado')   ||configApp.grado;
+  configApp.director = get('cfg-director')||configApp.director;
+  configApp.anio     = get('cfg-anio')    ||configApp.anio;
+  const newPin = get('cfg-pin');
+  if(newPin){
+    if(newPin.length!==4||isNaN(newPin)){ mostrarToast('El PIN debe ser 4 dígitos'); return; }
+    // Actualizar PIN en memoria (recarga necesaria para que surta efecto en login)
+    localStorage.setItem('lc_pin_director', newPin);
+    mostrarToast('PIN actualizado — recarga la página para aplicarlo');
+  }
+  guardar('lc_config', configApp);
+  document.getElementById('sidebar-rol-label').textContent =
+    modoActual==='director' ? `Director de grupo · ${configApp.grado}` : `Docente · ${materiaDocente?.nombre||''}`;
+  mostrarToast('Configuración guardada ✓');
+}
+
+// ============================================================
+// NAVEGACIÓN — EXTENDER para vistas Fase 3
+// ============================================================
+const _mostrarVistaFase2 = mostrarVista;
+mostrarVista = function(v){
+  const vistas = ['inicio','asistencia','disciplina','ranking','notas','academico',
+                  'actividades','estudiantes','informes','sync'];
+  vistas.forEach(n=>{
+    const el = document.getElementById('vista-'+n);
+    if(el) el.style.display = n===v?'block':'none';
+    const nav = document.getElementById('nav-'+n);
+    if(nav) nav.classList.toggle('active', n===v);
+  });
+  if(v==='asistencia')  renderAsistencia();
+  if(v==='disciplina')  renderDisciplina();
+  if(v==='ranking')     { patchRankingHeader(); renderRanking(); }
+  if(v==='notas')       renderNotasDir();
+  if(v==='academico')   { document.getElementById('periodo-sel').value='P1'; renderAcademico(); }
+  if(v==='actividades') renderActividades();
+  if(v==='estudiantes') renderEstudiantes();
+  if(v==='informes')    renderInformes();
+  if(v==='sync')        cargarConfigEnFormulario();
+  if(v==='inicio')      renderInicio();
+};
+
+// ============================================================
+// INIT FASE 3
+// ============================================================
+// Verificar modo portal ANTES de mostrar login
+if(!verificarModoPortal()){
+  document.getElementById('pantalla-login').style.display='flex';
+}
+
+
+</script>
+</body>
+</html>
